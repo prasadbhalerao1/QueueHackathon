@@ -113,6 +113,9 @@ export const AdminDashboard: React.FC = () => {
       setSnackbarMessage('EMERGENCY RESET: All branch tokens cleared.');
       queryClient.invalidateQueries({ queryKey: ['queue', selectedBranchId] });
       queryClient.invalidateQueries({ queryKey: ['analytics', selectedBranchId] });
+    },
+    onError: (error) => {
+      setSnackbarMessage(`Reset failed: ${error.message || 'Unknown error'}`);
     }
   });
 
@@ -162,7 +165,7 @@ export const AdminDashboard: React.FC = () => {
               onChange={(e) => {
                 setSelectedBranchId(e.target.value);
                 const b = branches?.find(b => b.id === e.target.value);
-                if (b) setNewCapacity(b.total_desks);
+                if (b) setNewCapacity(b.total_desks || 5);
               }} 
               sx={{ borderRadius: 2 }}
             >
@@ -300,21 +303,26 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Modify Capacity Dialog */}
       <Dialog open={capacityDialogOpen} onClose={() => setCapacityDialogOpen(false)} slotProps={{ paper: { sx: { borderRadius: 3, width: '100%', maxWidth: 400 } } }}>
-        <DialogTitle sx={{ fontWeight: 900 }}>Adjust Branch Capacity</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>Modify Branch Capacity</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ mb: 3 }}>Change the number of active service desks for this branch. This affects throughput calculations.</Typography>
           <TextField 
             fullWidth 
             type="number" 
             label="Total Desks" 
             value={newCapacity} 
-            onChange={(e) => setNewCapacity(parseInt(e.target.value))}
+            onChange={(e) => {
+              const val = parseInt(e.target.value, 10);
+              if (!isNaN(val) && val >= 1) {
+                setNewCapacity(val);
+              }
+            }}
+            slotProps={{ htmlInput: { min: 1 } }}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setCapacityDialogOpen(false)} color="inherit">Cancel</Button>
-          <Button variant="contained" onClick={() => updateCapacity()} sx={{ fontWeight: 800, px: 3 }}>Apply Changes</Button>
+          <Button variant="contained" onClick={() => updateCapacity()} disabled={isNaN(newCapacity) || newCapacity < 1} sx={{ fontWeight: 800, px: 3 }}>Apply Changes</Button>
         </DialogActions>
       </Dialog>
 

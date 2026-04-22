@@ -6,7 +6,7 @@ import api from '../../../common/api';
 import { Token, QueueStatus, JSendResponse } from '../types';
 
 export const CitizenDashboard: React.FC = () => {
-  const { data: response, isLoading } = useQuery<JSendResponse<Token[]>>({
+  const { data: response, isLoading, isError } = useQuery<JSendResponse<Token[]>>({
     queryKey: ['my-tokens'],
     queryFn: async () => {
       const res = await api.get('/api/queue/my-tokens');
@@ -19,6 +19,16 @@ export const CitizenDashboard: React.FC = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
         <CircularProgress size={60} color="primary" />
+      </Box>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        <Typography variant="h6" color="error">
+          Failed to load tokens. Please try again.
+        </Typography>
       </Box>
     );
   }

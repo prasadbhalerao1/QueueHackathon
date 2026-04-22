@@ -96,7 +96,7 @@ export const useAdvanceToken = (branchId: string) => {
       return { previousQueue };
     },
     
-    onError: (err: any, newTodo: any, context: any) => {
+    onError: (err: any, _variables: any, context: any) => {
       if (context?.previousQueue) {
         queryClient.setQueryData<Token[]>(['queue', branchId], context.previousQueue);
       }
@@ -118,8 +118,9 @@ export const useTransferToken = (branchId: string) => {
       if (data.status !== 'success') throw new Error(data.message || 'Failed to transfer token');
       return data.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['queue', variables.targetBranchId] });
     },
   });
 };

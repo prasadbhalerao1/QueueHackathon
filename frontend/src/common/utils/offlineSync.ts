@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { get, clear, set } from 'idb-keyval';
+import { get, clear } from 'idb-keyval';
 import api from '../api';
 
 export const syncOfflineMutations = async (queryClient: QueryClient) => {

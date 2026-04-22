@@ -85,17 +85,17 @@ export const theme = createTheme({
           borderRadius: '8px',
           padding: '10px 24px',
           boxShadow: 'none',
+          '&.MuiButton-containedPrimary': {
+            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            },
+          },
           '&:hover': {
             boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
             transform: 'translateY(-1px)',
           },
           transition: 'all 0.2s ease-in-out',
-        },
-        containedPrimary: {
-          background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-          },
         },
       },
     },

@@ -23,7 +23,8 @@ export const CitizenTracker: React.FC = () => {
     // Stop polling once the token hits a terminal state — no point hammering the DB
     refetchInterval: (query) => {
       const status = query.state.data?.token?.status;
-      if (!status || TERMINAL_STATUSES.includes(status)) return false;
+      if (status === undefined) return 3000;
+      if (TERMINAL_STATUSES.includes(status)) return false;
       return 3000;
     },
     // Don't retry aggressively on failure

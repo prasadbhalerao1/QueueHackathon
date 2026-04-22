@@ -2,7 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import {
   Box, Card, Typography, Button, Skeleton, Snackbar, Alert, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Chip,
-  Paper, Grid, IconButton, Divider, Tooltip, Stack, Badge
+  Paper, Grid, IconButton, Tooltip, Stack, Badge
 } from '@mui/material';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../../../common/api';
@@ -134,6 +134,11 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
           setSnackbarOpen(true);
           setTransferModalOpen(false);
           setTransferTokenData(null);
+          setTargetBranchId('');
+        },
+        onError: (error) => {
+          setSnackbarMessage(`Transfer failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          setSnackbarOpen(true);
         }
       });
     }
@@ -345,7 +350,11 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                         <Chip label={token.status.replace('_', ' ')} size="small" sx={{ bgcolor: getStatusColor(token.status) + '22', color: getStatusColor(token.status), fontWeight: 800, border: `1px solid ${getStatusColor(token.status)}` }} />
                       </Box>
 
-                      <Divider sx={{ mb: 1.5 }} />
+                          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+                            {token.expected_service_time 
+                              ? new Date(token.expected_service_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              : '--:--'}
+                          </Typography>
                       
                       <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
