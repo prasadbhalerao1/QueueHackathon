@@ -4,8 +4,10 @@ import { Login } from './modules/auth/pages/Login';
 import { StaffDashboard } from './modules/queue/components/StaffDashboard';
 import { AdminDashboard } from './modules/admin/components/AdminDashboard';
 import { CitizenTracker } from './modules/queue/pages/CitizenTracker';
+import { CitizenDashboard } from './modules/queue/pages/CitizenDashboard';
 import { ProtectedRoute } from './common/components/ProtectedRoute';
 import { MainLayout } from './common/layouts/MainLayout';
+import { LandingPage } from './common/pages/LandingPage';
 import { Box, Typography, Button } from '@mui/material';
 import { logout } from './modules/auth/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,6 +20,8 @@ const Unauthorized = () => (
     <Button variant="contained" onClick={logout}>Log Out</Button>
   </Box>
 );
+
+
 
 export const App: React.FC = () => {
   const queryClient = useQueryClient();
@@ -34,9 +38,17 @@ export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/track/:tokenNumber" element={<CitizenTracker />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
+        
+        {/* Protected Routes for Citizens */}
+        <Route element={<ProtectedRoute allowedRoles={['CITIZEN', 'OFFICER', 'ADMIN']} />}>
+          <Route element={<MainLayout />}>
+            <Route path="/track" element={<CitizenDashboard />} />
+          </Route>
+        </Route>
         
         {/* Protected Routes for Staff */}
         <Route element={<ProtectedRoute allowedRoles={['OFFICER', 'ADMIN']} />}>
@@ -53,7 +65,7 @@ export const App: React.FC = () => {
         </Route>
         
         {/* Fallback */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );

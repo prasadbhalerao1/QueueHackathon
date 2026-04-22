@@ -23,6 +23,19 @@ class QueueController:
             raise QueueOSException(500, str(e))
 
     @staticmethod
+    async def get_my_tokens(user):
+        try:
+            tokens = await QueueService.get_user_tokens(str(user.id))
+            return {
+                "status": "success",
+                "data": [serialize_token(t) for t in tokens]
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    @staticmethod
     async def advance_token(token_id: str, req: AdvanceTokenRequest, background_tasks: BackgroundTasks):
         try:
             token = await QueueService.advance_token(token_id, req.new_status, background_tasks)
@@ -164,7 +177,8 @@ class QueueController:
                 "data": {
                     "token": serialize_token(status_data["token"]),
                     "people_ahead": status_data["people_ahead"],
-                    "estimated_wait_minutes": status_data["estimated_wait_minutes"]
+                    "estimated_wait_minutes": status_data["estimated_wait_minutes"],
+                    "current_serving": status_data["current_serving"]
                 }
             }
         except Exception as e:

@@ -9,14 +9,18 @@ class WhatsAppController:
     @staticmethod
     async def webhook(request: Request):
         try:
-            # Parse incoming Twilio Form data
             form_data = await request.form()
             sender_phone = form_data.get("From", "")
             message_body = form_data.get("Body", "")
             
-            xml_response = await WhatsAppService.process_incoming_message(sender_phone, message_body)
+            text_response = await WhatsAppService.process_webhook(sender_phone, message_body)
             
-            # Return strict raw XML per Twilio webhooks spec
+            xml_response = (
+                f"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                f"<Response>\n"
+                f"  <Message>{text_response}</Message>\n"
+                f"</Response>"
+            )
             return Response(content=xml_response, media_type="application/xml")
             
         except Exception as e:

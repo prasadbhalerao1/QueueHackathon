@@ -4,7 +4,7 @@ from src.modules.queue.queue_schema import (
     AdvanceTokenRequest, WalkInRequest, TransferRequest,
     CheckInRequest, DelayReportRequest, FeedbackRequest
 )
-from src.modules.auth.auth_deps import RoleChecker
+from src.modules.auth.auth_deps import RoleChecker, get_current_user
 from src.common.constants.enums import UserRole
 
 queue_router = APIRouter()
@@ -23,6 +23,10 @@ async def get_services():
 @queue_router.get("/track/{token_number}")
 async def track_token(token_number: str):
     return await QueueController.track_token(token_number)
+
+@queue_router.get("/my-tokens")
+async def get_my_tokens(current_user = Depends(get_current_user)):
+    return await QueueController.get_my_tokens(current_user)
 
 @queue_router.post("/check-in")
 async def check_in(request: CheckInRequest):
@@ -52,7 +56,13 @@ async def submit_feedback(token_id: str, request: FeedbackRequest):
     return await QueueController.submit_feedback(token_id, request)
 
 
-# --- ADMIN ONLY ROUTES ---
+# --- ADMIN / DEMO ROUTES ---
+
+@queue_router.post("/admin/seed/demo")
+async def seed_demo():
+    from src.common.seed import seed_demo_data
+    await seed_demo_data()
+    return {"message": "Massive demo data seeded successfully! 30+ rich Edge Case users attached."}
 
 @queue_router.get("/analytics/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 async def get_analytics(branch_id: str):

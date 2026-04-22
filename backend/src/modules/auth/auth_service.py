@@ -11,3 +11,12 @@ class AuthService:
         if not verify_password(password, user.hashed_password):
             raise QueueOSException(401, "Incorrect phone number or password")
         return user
+
+    @staticmethod
+    async def authenticate_citizen(phone: str) -> User:
+        user = await User.find_one({"phone": phone})
+        if not user:
+            from src.common.constants.enums import UserRole
+            user = User(phone=phone, name="Citizen", role=UserRole.CITIZEN)
+            await user.save()
+        return user

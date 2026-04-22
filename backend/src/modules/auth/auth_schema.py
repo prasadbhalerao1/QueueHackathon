@@ -6,6 +6,9 @@ class LoginRequest(BaseModel):
     phone: str
     password: str
 
+class CitizenLoginRequest(BaseModel):
+    phone: str
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

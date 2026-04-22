@@ -67,8 +67,13 @@ class QueueService:
     @staticmethod
     async def get_active_queue(branch_id: str) -> List[Token]:
         """Fetches the active queue for a branch, ordered by priority then expected_service_time."""
+        try:
+            branch_obj_id = PydanticObjectId(branch_id)
+        except Exception:
+            return []
+            
         tokens = await Token.find(
-            Token.branch.id == PydanticObjectId(branch_id),
+            Token.branch.id == branch_obj_id,
             In(Token.status, [
                 QueueStatus.BOOKED,
                 QueueStatus.ARRIVED,
@@ -80,6 +85,20 @@ class QueueService:
             fetch_links=True
         ).sort("+priority", "+expected_service_time").to_list()
 
+        return tokens
+
+    @staticmethod
+    async def get_user_tokens(user_id: str) -> List[Token]:
+        try:
+            uid = PydanticObjectId(user_id)
+        except Exception:
+            return []
+            
+        tokens = await Token.find(
+            Token.user.id == uid,
+            fetch_links=True
+        ).sort("-created_at").to_list()
+        
         return tokens
 
     @staticmethod
@@ -104,12 +123,21 @@ class QueueService:
         if old_status == QueueStatus.NO_SHOW and new_status == QueueStatus.WAITING:
             branch_id = token.branch.id if token.branch and hasattr(token.branch, "id") else None
             if branch_id:
+                # Grace Re-entry Logic: +1 Penalty
                 active_token = await Token.find(
                     Token.branch.id == branch_id,
                     In(Token.status, [QueueStatus.IN_PROGRESS, QueueStatus.CALLED])
                 ).sort("-expected_service_time").first_or_none()
 
-                if active_token:
+                next_waiting = await Token.find(
+                    Token.branch.id == branch_id,
+                    Token.status == QueueStatus.WAITING
+                ).sort("expected_service_time").first_or_none()
+
+                if next_waiting:
+                    # Penalty: Insert AFTER the next waiting person
+                    token.expected_service_time = next_waiting.expected_service_time + timedelta(seconds=1)
+                elif active_token:
                     token.expected_service_time = active_token.expected_service_time + timedelta(minutes=1)
                 else:
                     token.expected_service_time = now
@@ -184,10 +212,21 @@ class QueueService:
         if token.service and hasattr(token.service, "base_duration_minutes"):
             estimated_wait_minutes = people_ahead * token.service.base_duration_minutes
 
+        # Find currently serving token at this branch
+        current_serving = None
+        if token.branch and hasattr(token.branch, "id"):
+            current_serving_token = await Token.find(
+                Token.branch.id == token.branch.id,
+                Token.status == QueueStatus.IN_PROGRESS
+            ).sort("actual_start_time").first_or_none()
+            if current_serving_token:
+                current_serving = current_serving_token.token_number
+
         return {
             "token": token,
             "people_ahead": people_ahead,
-            "estimated_wait_minutes": estimated_wait_minutes
+            "estimated_wait_minutes": estimated_wait_minutes,
+            "current_serving": current_serving
         }
 
     @staticmethod

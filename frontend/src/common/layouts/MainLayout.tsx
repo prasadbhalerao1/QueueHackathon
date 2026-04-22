@@ -29,7 +29,7 @@ export const MainLayout: React.FC = () => {
       <AppBar position="static" color={isOffline ? 'inherit' : 'primary'} sx={{ boxShadow: 2 }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
-            QueueOS - {role === 'ADMIN' ? 'Admin Control' : role === 'OFFICER' ? 'Officer Panel' : 'Staff Panel'}
+            QueueOS - {role === 'ADMIN' ? 'Admin Control' : role === 'OFFICER' ? 'Officer Panel' : role === 'CITIZEN' ? 'Citizen Portal' : 'Staff Panel'}
           </Typography>
           <Typography variant="body1" sx={{ mr: 2, fontWeight: 'bold' }}>
             Welcome, {userName}

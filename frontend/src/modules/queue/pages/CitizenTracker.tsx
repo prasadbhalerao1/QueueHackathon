@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, Snackbar } from '@mui/material';
+import { Box, Card, Typography, CircularProgress, Alert, Button, Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, Snackbar, Container, Chip, LinearProgress } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../common/api';
 import { QueueStatus } from '../types';
@@ -51,85 +51,130 @@ export const CitizenTracker: React.FC = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#1e1e1e' }}>
-        <CircularProgress size={60} color="primary" />
+      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f8fafc' }}>
+        <CircularProgress size={60} color="primary" thickness={4} />
+        <Typography variant="h6" sx={{ mt: 3, fontWeight: 'bold', color: 'text.secondary' }}>Loading Live Status...</Typography>
       </Box>
     );
   }
 
   if (isError || !data) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#1e1e1e', p: 2 }}>
-        <Alert severity="error" sx={{ width: '100%', maxWidth: 400, fontWeight: 'bold' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f8fafc', p: 2 }}>
+        <Alert severity="error" sx={{ width: '100%', maxWidth: 400, fontWeight: 'bold', borderRadius: 3 }}>
           Invalid Token or Token Not Found.
         </Alert>
       </Box>
     );
   }
 
-  const { token, people_ahead } = data;
+  const { token, people_ahead, estimated_wait_minutes, current_serving } = data;
   const isCalled = token.status === QueueStatus.CALLED;
   const isCompleted = token.status === QueueStatus.COMPLETED;
   const isWaitingOrArrived = [QueueStatus.WAITING, QueueStatus.ARRIVED, QueueStatus.BOOKED].includes(token.status);
 
+  // Dynamic Progress Logic
+  const initialEstimate = estimated_wait_minutes > 0 ? estimated_wait_minutes + (people_ahead * 10) : 60; // fallback scale
+  const progressPercent = isCalled || isCompleted ? 100 : Math.max(5, 100 - ((people_ahead * 10 / initialEstimate) * 100));
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: isCalled ? '#4caf50' : '#121212', color: '#ffffff', p: 3, transition: 'background-color 0.5s ease' }}>
-      <Card sx={{ maxWidth: 500, width: '100%', bgcolor: isCalled ? '#ffffff' : '#1e1e1e', color: isCalled ? '#000000' : '#ffffff', boxShadow: 6, borderRadius: 4 }}>
-        <CardContent sx={{ p: 4, textAlign: 'center' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh', 
+      bgcolor: isCalled ? '#10b981' : '#f8fafc', 
+      color: isCalled ? '#ffffff' : '#0f172a', 
+      transition: 'background-color 0.5s ease',
+      pb: 4
+    }}>
+      {/* Top Banner */}
+      <Box sx={{ bgcolor: isCalled ? 'rgba(0,0,0,0.2)' : '#ffffff', p: 2, boxShadow: isCalled ? 'none' : '0 2px 10px rgba(0,0,0,0.05)', textAlign: 'center' }}>
+        <Typography variant="h6" fontWeight="900" sx={{ opacity: 0.9 }}>QueueOS Track</Typography>
+        {token.branch?.name && (
+          <Typography variant="body2" sx={{ opacity: 0.8 }}>{token.branch.name}</Typography>
+        )}
+      </Box>
+
+      <Container maxWidth="sm" sx={{ mt: { xs: 4, md: 8 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        
+        {/* Token Card */}
+        <Card elevation={isCalled ? 0 : 4} sx={{ 
+          borderRadius: 4, 
+          bgcolor: isCalled ? 'rgba(255,255,255,0.95)' : '#ffffff', 
+          color: '#0f172a',
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {isCalled && (
+            <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '8px', bgcolor: '#10b981' }} />
+          )}
+          
+          <Box sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" gutterBottom>
+              YOUR TOKEN NUMBER
+            </Typography>
+            
+            <Typography variant="h1" fontWeight="900" sx={{ 
+              fontSize: { xs: '4rem', md: '5rem' }, 
+              lineHeight: 1, 
+              mb: 2, 
+              color: isCalled ? '#10b981' : 'primary.main' 
+            }}>
+              {token.token_number}
+            </Typography>
+
+            <Chip 
+              label={token.status.replace('_', ' ')} 
+              color={isCalled ? "success" : "primary"} 
+              variant={isCalled ? "filled" : "outlined"}
+              sx={{ fontWeight: 'bold', fontSize: '1rem', px: 2, py: 2.5, borderRadius: 2 }}
+            />
+          </Box>
+
           {isCalled ? (
-            <Box sx={{ mb: 4, p: 3, border: "4px solid #4caf50", borderRadius: 2, bgcolor: "#e8f5e9" }}>
-              <Typography variant="h3" className="blink-text" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                PLEASE PROCEED TO DESK {token.desk_number || ''}
-              </Typography>
+            <Box sx={{ p: 4, bgcolor: '#ecfdf5', borderTop: '1px solid #d1fae5', textAlign: 'center' }}>
+               <Typography variant="h4" className="blink-text" sx={{ fontWeight: '900', color: '#047857' }}>
+                IT'S YOUR TURN!
+               </Typography>
+               <Typography variant="h6" sx={{ mt: 1, color: '#065f46' }}>
+                Please proceed to Desk {token.desk_number || 'immediately'}
+               </Typography>
             </Box>
           ) : (
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" gutterBottom sx={{ color: '#aaaaaa', fontWeight: 'bold' }}>
-                Your Token Number
-              </Typography>
-              <Typography variant="h1" sx={{ fontWeight: 'bold', color: token.priority === 1 ? "error.light" : "primary.light" }}>
-                {token.token_number}
-              </Typography>
+            <Box sx={{ p: 3, borderTop: '1px solid #e2e8f0', bgcolor: '#f1f5f9' }}>
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Typography variant="body2" color="text.secondary" fontWeight="bold">Queue Progress</Typography>
+                <Typography variant="body2" color="primary.main" fontWeight="bold">{people_ahead} Ahead</Typography>
+              </Box>
+              <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 10, borderRadius: 5 }} />
+              
+              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2} mt={3}>
+                <Box p={2} bgcolor="#ffffff" borderRadius={3} textAlign="center" boxShadow="0 2px 4px rgba(0,0,0,0.02)">
+                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Est. Wait</Typography>
+                  <Typography variant="h5" fontWeight="900" color="info.main">{estimated_wait_minutes}m</Typography>
+                </Box>
+                <Box p={2} bgcolor="#ffffff" borderRadius={3} textAlign="center" boxShadow="0 2px 4px rgba(0,0,0,0.02)">
+                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Serving</Typography>
+                  <Typography variant="h5" fontWeight="900">{current_serving || '--'}</Typography>
+                </Box>
+              </Box>
             </Box>
           )}
+        </Card>
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3, p: 2, bgcolor: isCalled ? '#f5f5f5' : '#2d2d2d', borderRadius: 2 }}>
-            <Box>
-              <Typography variant="body2" sx={{ color: isCalled ? 'text.secondary' : '#aaaaaa', fontWeight: 'bold' }}>
-                Current Status
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                {token.status.replace('_', ' ')}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" sx={{ color: isCalled ? 'text.secondary' : '#aaaaaa', fontWeight: 'bold' }}>
-                People Ahead
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: isCalled ? 'text.primary' : 'error.light' }}>
-                {people_ahead}
-              </Typography>
-            </Box>
-          </Box>
-
-          <Box sx={{ p: 2, mb: 3, border: "1px dashed", borderColor: isCalled ? 'grey.400' : 'grey.700', borderRadius: 2 }}>
-            <Typography variant="body2" sx={{ color: isCalled ? 'text.secondary' : '#aaaaaa', fontWeight: 'bold' }}>
-              Estimated Service Time
-            </Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', color: isCalled ? 'text.primary' : 'info.light' }}>
-              {new Date(token.expected_service_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Typography>
-          </Box>
-
+        {/* Action Buttons */}
+        <Box display="flex" flexDirection="column" gap={2}>
           {isWaitingOrArrived && (
             <Button 
-              variant="outlined" 
-              color="warning" 
+              variant="contained" 
+              color="secondary" 
+              size="large"
               fullWidth 
               onClick={() => setDelayOpen(true)}
-              sx={{ fontWeight: 'bold', mb: 2 }}
+              sx={{ fontWeight: 'bold', py: 2, fontSize: '1.1rem', borderRadius: 3 }}
             >
-              Running Late? Report Delay
+              Running Late? (Hold Spot)
             </Button>
           )}
 
@@ -137,71 +182,72 @@ export const CitizenTracker: React.FC = () => {
             <Button 
               variant="contained" 
               color="primary" 
+              size="large"
               fullWidth 
               onClick={() => setFeedbackOpen(true)}
-              sx={{ fontWeight: 'bold' }}
+              sx={{ fontWeight: 'bold', py: 2, fontSize: '1.1rem', borderRadius: 3 }}
             >
               Rate Your Experience
             </Button>
           )}
           
           {isCompleted && token.rating && (
-            <Alert severity="success" sx={{ mt: 2, justifyContent: 'center' }}>
-              You rated your experience {token.rating} Stars!
+            <Alert severity="success" variant="filled" sx={{ borderRadius: 3, justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>
+              You rated your experience {token.rating} Stars. Thanks!
             </Alert>
           )}
-        </CardContent>
-      </Card>
+        </Box>
+
+      </Container>
       
       {/* Feedback Dialog */}
-      <Dialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)}>
-        <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center' }}>Rate Your Experience</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
-          <Typography sx={{ mb: 2 }}>How was the service today?</Typography>
+      <Dialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
+        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>How was our service?</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
           <Rating
             name="service-rating"
             value={rating}
-            onChange={(_, newValue) => {
-              setRating(newValue);
-            }}
+            onChange={(_, newValue) => setRating(newValue)}
             size="large"
+            sx={{ fontSize: '3rem' }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
-          <Button onClick={() => setFeedbackOpen(false)} disabled={feedbackPending}>Cancel</Button>
-          <Button variant="contained" onClick={() => submitFeedback()} disabled={feedbackPending || !rating}>
-            {feedbackPending ? 'Submitting...' : 'Submit Rating'}
+          <Button onClick={() => setFeedbackOpen(false)} disabled={feedbackPending} sx={{ fontWeight: 'bold' }}>Cancel</Button>
+          <Button variant="contained" onClick={() => submitFeedback()} disabled={feedbackPending || !rating} sx={{ fontWeight: 'bold', px: 4 }}>
+            {feedbackPending ? 'Submitting...' : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delay Dialog */}
-      <Dialog open={delayOpen} onClose={() => setDelayOpen(false)}>
-        <DialogTitle sx={{ fontWeight: 'bold', textAlign: 'center' }}>Report Delay</DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3 }}>
-          <Typography sx={{ mb: 2 }} align="center">
-            Are you running late? Report a delay to push back your expected service time without losing your spot.
+      <Dialog open={delayOpen} onClose={() => setDelayOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
+        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>Report Delay</DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
+          <Typography sx={{ mb: 3 }} align="center" color="text.secondary">
+            Running late? We can push your slot back and let others go first so you don't lose your token.
           </Typography>
           <TextField
             type="number"
-            label="Delay in Minutes"
+            label="I will be late by (minutes)"
             value={delayMinutes}
             onChange={(e) => setDelayMinutes(parseInt(e.target.value) || 0)}
             InputProps={{ inputProps: { min: 1, max: 120 } }}
             fullWidth
-            sx={{ mt: 2 }}
+            variant="outlined"
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
-          <Button onClick={() => setDelayOpen(false)} disabled={delayPending}>Cancel</Button>
-          <Button variant="contained" color="warning" onClick={() => reportDelay()} disabled={delayPending || delayMinutes <= 0}>
-            {delayPending ? 'Reporting...' : 'Confirm Delay'}
+          <Button onClick={() => setDelayOpen(false)} disabled={delayPending} sx={{ fontWeight: 'bold' }}>Cancel</Button>
+          <Button variant="contained" color="warning" onClick={() => reportDelay()} disabled={delayPending || delayMinutes <= 0} sx={{ fontWeight: 'bold', px: 4 }}>
+            {delayPending ? 'Processing...' : 'Confirm Delay'}
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar open={!!snackbarMsg} autoHideDuration={4000} onClose={() => setSnackbarMsg('')}>
-        <Alert onClose={() => setSnackbarMsg('')} severity="success" sx={{ width: '100%' }}>
+      <Snackbar open={!!snackbarMsg} autoHideDuration={5000} onClose={() => setSnackbarMsg('')} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={() => setSnackbarMsg('')} severity="success" variant="filled" sx={{ width: '100%', borderRadius: 3, fontWeight: 'bold' }}>
           {snackbarMsg}
         </Alert>
       </Snackbar>
@@ -209,12 +255,12 @@ export const CitizenTracker: React.FC = () => {
       <style>
         {`
           @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.02); }
+            100% { opacity: 1; transform: scale(1); }
           }
           .blink-text {
-            animation: blink 1.5s infinite;
+            animation: blink 2s infinite ease-in-out;
           }
         `}
       </style>

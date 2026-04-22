@@ -8,7 +8,7 @@ from src.common.seed import seed_demo_data
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    await seed_demo_data()
+    # Seeding is now manual. Call POST /api/queue/admin/seed/demo
     yield
 
 app = FastAPI(
@@ -36,6 +36,41 @@ app.include_router(queue_router, prefix="/api/queue", tags=["Queue"])
 app.include_router(whatsapp_router, prefix="/api/whatsapp", tags=["WhatsApp"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "app": "QueueOS Full-Stack Node",
+        "docs": "/docs",
+        "health": "/health",
+        "seed": "POST /api/queue/admin/seed/demo"
+    }
+
+import time
+import platform
+import sys
+
+START_TIME = time.time()
+
 @app.get("/health")
 async def health_check():
-    return {"status": "success", "message": "QueueOS API is running"}
+    db_status = "ok"
+    try:
+        from src.modules.users.users_model import User
+        # Simple DB ping by fetching one document or just checking connection
+        await User.find_one()
+    except Exception as e:
+        db_status = f"error: {str(e)}"
+        
+    uptime_seconds = int(time.time() - START_TIME)
+    
+    return {
+        "status": "success",
+        "message": "QueueOS API is running optimally.",
+        "system_info": {
+            "uptime_seconds": uptime_seconds,
+            "python_version": sys.version.split(" ")[0],
+            "platform": platform.platform(),
+            "db_status": db_status
+        }
+    }

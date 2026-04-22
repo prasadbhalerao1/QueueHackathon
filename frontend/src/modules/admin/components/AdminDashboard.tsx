@@ -60,7 +60,7 @@ export const AdminDashboard: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box p={4} maxWidth="1200px" margin="0 auto">
+      <Box sx={{ p: 4, maxWidth: "1200px", margin: "0 auto" }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap' }}>
           <Typography variant="h3" fontWeight="bold" gutterBottom color="textPrimary">
             Admin Control Center
@@ -80,25 +80,25 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Card sx={{ bgcolor: 'primary.main', color: 'white', textAlign: 'center', p: 2, boxShadow: 3 }}>
               <Typography variant="h6">Tokens Served</Typography>
               <Typography variant="h3" fontWeight="bold">{isLoading ? '-' : analytics?.tokens_served_today || 0}</Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Card sx={{ bgcolor: 'secondary.main', color: 'white', textAlign: 'center', p: 2, boxShadow: 3 }}>
               <Typography variant="h6">Waiting</Typography>
               <Typography variant="h3" fontWeight="bold">{isLoading ? '-' : analytics?.tokens_waiting || 0}</Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Card sx={{ bgcolor: 'info.main', color: 'white', textAlign: 'center', p: 2, boxShadow: 3 }}>
               <Typography variant="h6">Avg Wait</Typography>
               <Typography variant="h3" fontWeight="bold">{isLoading ? '-' : `${analytics?.avg_wait_minutes}m`}</Typography>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid xs={12} sm={6} md={3}>
             <Card sx={{ bgcolor: 'error.main', color: 'white', textAlign: 'center', p: 2, boxShadow: 3 }}>
               <Typography variant="h6">No-Show</Typography>
               <Typography variant="h3" fontWeight="bold">{isLoading ? '-' : `${analytics?.no_show_percentage}%`}</Typography>
@@ -108,7 +108,7 @@ export const AdminDashboard: React.FC = () => {
 
         <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Emergency Operations</Typography>
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Card sx={{ border: '2px solid', borderColor: 'error.main', height: '100%' }}>
               <CardContent>
                 <Typography variant="h5" color="error.main" fontWeight="bold" gutterBottom>
@@ -131,7 +131,7 @@ export const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid xs={12} sm={6}>
             <Card sx={{ border: '2px solid', borderColor: 'warning.main', height: '100%' }}>
               <CardContent>
                 <Typography variant="h5" color="warning.main" fontWeight="bold" gutterBottom>
@@ -157,7 +157,7 @@ export const AdminDashboard: React.FC = () => {
         </Grid>
 
         {/* Hackathon Flex: Render Staff Dashboard inside Admin Dashboard */}
-        <Box border="2px dashed gray" p={3} borderRadius={2} bgcolor="background.default" mt={4}>
+        <Box sx={{ border: "2px dashed gray", p: 3, borderRadius: 2, bgcolor: "background.default", mt: 4 }}>
           <Typography variant="subtitle1" color="textSecondary" gutterBottom align="center" fontWeight="bold">
             -- LIVE STAFF DASHBOARD PREVIEW --
           </Typography>

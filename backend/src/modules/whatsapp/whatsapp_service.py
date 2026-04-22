@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta
+from typing import Optional
 from beanie import PydanticObjectId
 from beanie.operators import In
 from google import genai
@@ -8,7 +9,7 @@ from google.genai import types
 from src.common.config.config import settings
 from src.modules.queue.queue_model import Token, Service, Branch
 from src.modules.users.users_model import User
-from src.common.constants.enums import QueueStatus
+from src.common.constants.enums import QueueStatus, BookingType
 from src.modules.whatsapp.whatsapp_schema import GeminiIntentSchema
 from twilio.rest import Client
 
@@ -16,64 +17,52 @@ logger = logging.getLogger(__name__)
 
 class WhatsAppService:
     @staticmethod
-    async def send_message(to: str, body: str):
+    async def send_outbound_whatsapp(to_phone: str, message: str):
         try:
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            message = client.messages.create(
+            twilio_msg = client.messages.create(
                 from_=f"whatsapp:{settings.TWILIO_WHATSAPP_NUMBER}",
-                body=body,
-                to=f"whatsapp:{to}"
+                body=message,
+                to=f"whatsapp:{to_phone}"
             )
-            logger.info(f"Sent WhatsApp message to {to}: {message.sid}")
+            logger.info(f"Sent outbound WhatsApp message to {to_phone}: {twilio_msg.sid}")
         except Exception as e:
-            logger.error(f"Failed to send WhatsApp message to {to}: {e}")
+            logger.error(f"Failed to send outbound WhatsApp message to {to_phone}: {e}")
 
     @staticmethod
-    async def process_incoming_message(sender_phone: str, message_body: str) -> str:
-        # Clean the phone number
+    async def process_webhook(sender_phone: str, message: str) -> str:
         phone = sender_phone.replace("whatsapp:", "").strip()
-        
+        if not phone.startswith("+"):
+            phone = "+" + phone
+
         # Find or create User
         user = await User.find_one({"phone": phone})
         if not user:
-            user = User(phone=phone)
+            user = User(phone=phone, name="Citizen", role="CITIZEN")
             await user.save()
 
-        # 1. Anti-Spam Check
+        # TEST CASE 4: Anti-Spam Check
         active_tokens_count = await Token.find(
             Token.user.id == user.id,
             In(Token.status, [QueueStatus.BOOKED, QueueStatus.WAITING, QueueStatus.ARRIVED])
         ).count()
         
         if active_tokens_count >= 2:
-            return (
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<Response>\n"
-                "  <Message>Rate limit exceeded. You already have the maximum allowed active tokens (2). Please wait for your current appointments to finish.</Message>\n"
-                "</Response>"
-            )
+            return "?? Booking Failed: You already have 2 active tokens in the queue. Please complete or cancel your existing appointments before booking a new one."
 
-        # 2. Gemini NLP - Native Structured Outputs
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-        
-        # Robust prompt for handling messy mixed language text
-        prompt = f"""
-        You are an AI assistant for a government queue system (Citizen Facilitation Center) in India.
-        Extract the user's intent, the exact service name they are requesting (if booking), and their language.
-        The user might type in messy Hindi (Hinglish), Marathi, or English.
-        Example intents: 
-        - "I want to book an appointment for driving license" -> BOOKING, "Driving License", "en"
-        - "mera status kya hai" -> STATUS, null, "hi"
-        - "mala certificate pahije" -> BOOKING, "Certificate", "mr"
-        - "help me" -> HELP, null, "en"
-        
-        User Message: "{message_body}"
-        """
-        
+        # TEST CASE 1 & 2: Gemini NLP Engine
         try:
-            # FORCE Gemini to return strict JSON using response_schema natively
+            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            prompt = f"""
+            You are a queue manager. Read the user's message. 
+            If they want to book but didn't specify a service, set intent to CLARIFICATION. 
+            Detect their language.
+            
+            User's message: "{message}"
+            """
+            
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-flash-latest',
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
@@ -81,93 +70,88 @@ class WhatsAppService:
                     temperature=0.0
                 ),
             )
+            
             intent_data = GeminiIntentSchema.model_validate_json(response.text)
         except Exception as e:
-            logger.error(f"Gemini API Error: {e}")
-            return (
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<Response>\n"
-                "  <Message>System Error: Our AI is temporarily down. Please try again in a few minutes.</Message>\n"
-                "</Response>"
-            )
+            logger.error(f"Gemini AI Error: {e}")
+            return "System Error: Our AI is currently down. Please try again later."
 
-        # 3. Queue Math & Booking Logic
-        if intent_data.intent == "BOOKING" and intent_data.service_name:
-            service = await Service.find_one({"name": {"$regex": intent_data.service_name, "$options": "i"}})
-            if not service:
-                return (
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    "<Response>\n"
-                    f"  <Message>We could not find the service '{intent_data.service_name}'. Please clarify which service you need (e.g., 'Certificate', 'Payment').</Message>\n"
-                    "</Response>"
-                )
+        # Routing Logic based on Intent
+        if intent_data.intent == "CLARIFICATION":
+            services = await Service.find_all().to_list()
+            service_names = "\n".join([f"{i+1}. {s.name}" for i, s in enumerate(services)])
+            return f"I can help with that! What specific service do you need? Please reply with one of the following:\n{service_names}"
+            
+        elif intent_data.intent == "STATUS":
+            # TEST CASE 3: Status Check
+            active_token = await Token.find(
+                Token.user.id == user.id,
+                In(Token.status, [QueueStatus.BOOKED, QueueStatus.WAITING, QueueStatus.ARRIVED])
+            ).sort("-created_at").skip(0).limit(1).to_list()
+            
+            if not active_token:
+                return "You don't have any active tokens."
                 
+            active_token = active_token[0]
+            
+            # Count people ahead
+            ahead_count = await Token.find(
+                Token.branch.id == active_token.branch.id,
+                Token.status == QueueStatus.WAITING,
+                Token.expected_service_time < active_token.expected_service_time
+            ).count()
+            
+            est_wait = ahead_count * 10
+            if active_token.service and hasattr(active_token.service, "base_duration_minutes"):
+                est_wait = ahead_count * active_token.service.base_duration_minutes
+                
+            return f"Your token {active_token.token_number} is currently {active_token.status.name}. There are {ahead_count} people ahead of you. Estimated time to your turn is {est_wait} minutes."
+            
+        elif intent_data.intent == "BOOKING":
+            target_service = None
+            if intent_data.service_name:
+                services = await Service.find_all().to_list()
+                for s in services:
+                    if s.name.lower() in intent_data.service_name.lower() or intent_data.service_name.lower() in s.name.lower():
+                        target_service = s
+                        break
+            
+            if not target_service:
+                 # Fallback if service not found
+                 services = await Service.find_all().to_list()
+                 service_names = "\n".join([f"{i+1}. {s.name}" for i, s in enumerate(services)])
+                 return f"I couldn't identify that exact service. What specific service do you need? Please reply with one of the following:\n{service_names}"
+
             branch = await Branch.find_one()
             if not branch:
-                branch = Branch(name="Main Branch", lat=0.0, lng=0.0)
-                await branch.save()
-                
-            last_waiting_token = await Token.find(
-                Token.branch.id == branch.id,
-                Token.status == QueueStatus.WAITING
-            ).sort("-expected_service_time").first_or_none()
+                 return "System error: No branches configured."
+                 
+            active_waiting = await Token.find(
+                 Token.branch.id == branch.id,
+                 In(Token.status, [QueueStatus.WAITING, QueueStatus.IN_PROGRESS])
+            ).to_list()
             
-            now = datetime.utcnow()
-            if last_waiting_token and last_waiting_token.expected_service_time > now:
-                expected_time = last_waiting_token.expected_service_time + timedelta(minutes=service.base_duration_minutes)
-            else:
-                expected_time = now + timedelta(minutes=service.base_duration_minutes)
-                
+            wait_sum_minutes = sum([t.service.base_duration_minutes if t.service else 10 for t in active_waiting])
+            expected_time = datetime.utcnow() + timedelta(minutes=wait_sum_minutes)
+            
             token_count = await Token.find(Token.branch.id == branch.id).count()
-            token_number = f"A-{token_count + 1}"
+            tk_num = f"A-{100 + token_count + 1}"
             
             new_token = Token(
-                token_number=token_number,
-                user=user,
+                token_number=tk_num,
                 branch=branch,
-                service=service,
-                status=QueueStatus.BOOKED,
+                service=target_service,
+                user=user,
+                booking_type=BookingType.WHATSAPP,
+                status=QueueStatus.WAITING,
+                priority=3,
                 expected_service_time=expected_time
             )
             await new_token.save()
             
-            time_str = expected_time.strftime("%I:%M %p")
+            return f"Aapki booking confirm ho gayi hai! ? Aapka Token Number hai: {tk_num}. Branch: {branch.name}. Expected wait time: {wait_sum_minutes} mins. Track here: https://queueos.demo/track/{tk_num}"
             
-            return (
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<Response>\n"
-                "  <Message>Booking Confirmed!\n"
-                f"Token Number: {token_number}\n"
-                f"Branch: {branch.name}\n"
-                f"Expected Service Time: {time_str}</Message>\n"
-                "</Response>"
-            )
+        elif intent_data.intent == "HELP":
+            return "Welcome to QueueOS! Text me to book an appointment (e.g., 'I want an Aadhar Update'), check your status ('status'), or ask for help."
             
-        elif intent_data.intent == "STATUS":
-            active_token = await Token.find_one(
-                Token.user.id == user.id,
-                In(Token.status, [QueueStatus.BOOKED, QueueStatus.WAITING, QueueStatus.ARRIVED])
-            ).sort("-created_at")
-            
-            if active_token:
-                time_str = active_token.expected_service_time.strftime("%I:%M %p")
-                return (
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    "<Response>\n"
-                    f"  <Message>Your Token {active_token.token_number} is currently {active_token.status.value}. Expected time: {time_str}.</Message>\n"
-                    "</Response>"
-                )
-            else:
-                return (
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                    "<Response>\n"
-                    "  <Message>You have no active tokens.</Message>\n"
-                    "</Response>"
-                )
-        else:
-            return (
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                "<Response>\n"
-                "  <Message>Welcome to QueueOS! Please specify the service you want to book (e.g., 'Book an appointment for Driving License').</Message>\n"
-                "</Response>"
-            )
+        return "I am the QueueOS assistant. Tell me what service you need or ask for your token status!"
