@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.common.database.connection import init_db
 from src.common.exceptions.handlers import register_exception_handlers
-from src.common.seed import seed_demo_data
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -54,13 +54,14 @@ START_TIME = time.time()
 
 @app.get("/health")
 async def health_check():
-    db_status = "ok"
     try:
-        from src.modules.users.users_model import User
-        # Simple DB ping by fetching one document or just checking connection
-        await User.find_one()
+        from motor.motor_asyncio import AsyncIOMotorClient
+        from src.common.config.config import settings
+        client = AsyncIOMotorClient(settings.MONGODB_URI, serverSelectionTimeoutMS=2000)
+        await client.admin.command('ping')
+        db_status = "Connected to MongoDB securely"
     except Exception as e:
-        db_status = f"error: {str(e)}"
+        db_status = f"Disconnected (Database Error: {str(e)})"
         
     uptime_seconds = int(time.time() - START_TIME)
     

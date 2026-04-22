@@ -13,7 +13,7 @@ export const Login: React.FC = () => {
   const { mutate: citizenLogin, isPending: isCitizenPending } = useCitizenLoginMutation();
   const navigate = useNavigate();
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
     setErrorMsg('');
     setPhone('');
@@ -51,10 +51,10 @@ export const Login: React.FC = () => {
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", bgcolor: "#f8fafc", p: 2 }}>
       <Card sx={{ maxWidth: 450, width: '100%', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.1)', borderRadius: 4 }}>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h4" component="h1" fontWeight="900" gutterBottom align="center" color="primary">
+          <Typography variant="h4" component="h1" gutterBottom align="center" color="primary" sx={{ fontWeight: '900' }}>
             QueueOS Access
           </Typography>
-          <Typography variant="body2" color="text.secondary" align="center" mb={3}>
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
             Please select your portal below to log in.
           </Typography>
           
@@ -99,7 +99,7 @@ export const Login: React.FC = () => {
             )}
 
             {tabIndex === 0 && (
-              <Typography variant="caption" color="text.secondary" display="block" align="center" mb={3}>
+              <Typography variant="caption" color="text.secondary" align="center" sx={{ display: 'block', mb: 3 }}>
                 No password required. Enter your registered phone number to access your tokens.
               </Typography>
             )}

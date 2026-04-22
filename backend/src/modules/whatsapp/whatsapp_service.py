@@ -54,11 +54,45 @@ class WhatsAppService:
         try:
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
             prompt = f"""
-            You are a queue manager. Read the user's message. 
-            If they want to book but didn't specify a service, set intent to CLARIFICATION. 
-            Detect their language.
+            You are 'QueueOS Assistant', a highly intelligent queue management AI for public services.
+            Your job is to read the user's WhatsApp message and determine their precise intent, the service they want, and their language.
             
-            User's message: "{message}"
+            ### BACKEND LOGIC CONTEXT (How your output controls the system):
+            - BOOKING: Output this when the user clearly states the service they want. The backend will instantly auto-assign them, calculate dynamic wait times based on live queue traffic, and generate a live tracking PWA link.
+            - STATUS: Output this when the user asks about wait times, ETA, or queue position. The backend will cross-reference their phone number, count active tokens ahead of them, and reply with exact minutes remaining.
+            - CLARIFICATION: Output this if the user wants to book but is vague (e.g., "I need help with documents"). The backend will dynamically fetch and list all available services for them to choose from.
+            - HELP: Output this for cancellations, general questions, or unrecognized intents.
+            
+            ### TEST CASES & EXPECTED BEHAVIOR:
+            
+            User: "bhai mera aadhar update karna hai, jaldi slot de do"
+            Expected Intent: BOOKING
+            Expected Service: "Aadhaar Update"
+            Language: "hi" (Hindi/Hinglish)
+            
+            User: "I need to get some government work done today."
+            Expected Intent: CLARIFICATION
+            Expected Service: null
+            Language: "en"
+            
+            User: "Kitna time aur lagega mera token ko?"
+            Expected Intent: STATUS
+            Expected Service: null
+            Language: "hi"
+            
+            User: "Majha pani bil bharaycha ahe" (Marathi for water bill)
+            Expected Intent: BOOKING
+            Expected Service: "Water Bill"
+            Language: "mr"
+            
+            User: "I am running late by 15 mins!"
+            Expected Intent: STATUS (We will guide them to use the tracker link for Grace Re-entry)
+            Expected Service: null
+            Language: "en"
+            
+            ### YOUR TASK:
+            Analyze the following user message and output strictly the requested JSON schema:
+            "{message}"
             """
             
             response = client.models.generate_content(
