@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../common/api';
 import { Token, QueueStatus, AdvanceTokenRequest, JSendResponse, Branch, Service, AnalyticsData } from '../types';
@@ -34,7 +33,11 @@ export const useAnalytics = (branchId: string, enabled: boolean = true) => {
       if (data.status !== 'success') throw new Error(data.message || 'Failed to fetch analytics');
       return data.data;
     },
-    refetchInterval: 5000,
+    refetchInterval: (query) => {
+      if (query.state.status === 'error') return false;
+      return 5000;
+    },
+    retry: 1,
     enabled: !!branchId && enabled,
   });
 };
@@ -47,9 +50,15 @@ export const useLiveQueue = (branchId: string, enabled: boolean = true) => {
       if (data.status !== 'success') throw new Error(data.message || 'Failed to fetch queue');
       return data.data;
     },
-    refetchInterval: 3000,
-    staleTime: 2000,
+    refetchInterval: (query) => {
+      // Stop hammering on error — only poll when last fetch succeeded
+      if (query.state.status === 'error') return false;
+      return 5000; // Increased to 5s to reduce network noise
+    },
+    staleTime: 4000,
+    retry: 1,
     enabled: !!branchId && enabled,
+    placeholderData: (previousData) => previousData, // Maintain UI state during background refetch
   });
 };
 
@@ -98,6 +107,34 @@ export const useAdvanceToken = (branchId: string) => {
       if (navigator.onLine) {
         queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
       }
+    },
+  });
+};
+export const useTransferToken = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ tokenId, targetBranchId }: { tokenId: string; targetBranchId: string }) => {
+      const { data } = await api.post<JSendResponse<Token>>(`/api/queue/transfer/${tokenId}`, { target_branch_id: targetBranchId });
+      if (data.status !== 'success') throw new Error(data.message || 'Failed to transfer token');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+    },
+  });
+};
+
+export const useToggleRush = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<JSendResponse<Branch>>(`/api/queue/rush/${branchId}`);
+      if (data.status !== 'success') throw new Error(data.message || 'Failed to toggle rush mode');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
     },
   });
 };

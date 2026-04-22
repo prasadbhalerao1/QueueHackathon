@@ -36,6 +36,19 @@ class QueueController:
             raise QueueOSException(500, str(e))
 
     @staticmethod
+    async def lookup_by_phone(phone: str):
+        try:
+            tokens = await QueueService.lookup_tokens_by_phone(phone.strip())
+            return {
+                "status": "success",
+                "data": [serialize_token(t) for t in tokens]
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    @staticmethod
     async def advance_token(token_id: str, req: AdvanceTokenRequest, background_tasks: BackgroundTasks):
         try:
             token = await QueueService.advance_token(token_id, req.new_status, background_tasks)
@@ -126,6 +139,22 @@ class QueueController:
         except Exception as e:
             if isinstance(e, QueueOSException):
                 raise e
+            raise QueueOSException(500, str(e))
+    @staticmethod
+    async def reset_branch_queue(branch_id: str):
+        try:
+            count = await QueueService.reset_branch_queue(branch_id)
+            return {"status": "success", "message": f"Successfully reset branch. {count} tokens cancelled."}
+        except Exception as e:
+            raise QueueOSException(500, str(e))
+    @staticmethod
+    async def update_branch_capacity(branch_id: str, capacity: int):
+        try:
+            branch = await QueueService.update_branch_capacity(branch_id, capacity)
+            if not branch:
+                raise QueueOSException(404, "Branch not found")
+            return {"status": "success", "message": f"Capacity updated to {capacity}", "data": branch}
+        except Exception as e:
             raise QueueOSException(500, str(e))
 
     @staticmethod

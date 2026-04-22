@@ -11,25 +11,29 @@ def serialize_token(token) -> dict:
     def _resolve_link(obj):
         if obj is None:
             return None
-        if hasattr(obj, "id"):
+        # Fully fetched Beanie Document
+        if hasattr(obj, "id") and hasattr(obj, "model_fields"):
             result = {"id": str(obj.id)}
-            if hasattr(obj, "name"):
+            if hasattr(obj, "name") and obj.name is not None:
                 result["name"] = obj.name
-            if hasattr(obj, "phone"):
+            if hasattr(obj, "phone") and obj.phone is not None:
                 result["phone"] = obj.phone
-            if hasattr(obj, "role"):
+            if hasattr(obj, "role") and obj.role is not None:
                 result["role"] = obj.role.value if hasattr(obj.role, "value") else str(obj.role)
-            if hasattr(obj, "base_duration_minutes"):
+            if hasattr(obj, "base_duration_minutes") and obj.base_duration_minutes is not None:
                 result["base_duration_minutes"] = obj.base_duration_minutes
-            if hasattr(obj, "lat"):
+            if hasattr(obj, "lat") and obj.lat is not None:
                 result["lat"] = obj.lat
-                result["lng"] = obj.lng
-            if hasattr(obj, "active_desks"):
+                result["lng"] = getattr(obj, "lng", None)
+            if hasattr(obj, "active_desks") and obj.active_desks is not None:
                 result["active_desks"] = obj.active_desks
             return result
+        # Unfetched Link ref (DBRef or Beanie Link wrapper)
         if hasattr(obj, "ref"):
             return {"id": str(obj.ref.id)}
-        return str(obj)
+        if hasattr(obj, "id"):
+            return {"id": str(obj.id)}
+        return None
 
     data = {
         "id": str(token.id),
@@ -50,6 +54,7 @@ def serialize_token(token) -> dict:
         "created_at": token.created_at.isoformat() if token.created_at else None,
     }
     return data
+
 
 
 class TokenResponse(BaseModel):

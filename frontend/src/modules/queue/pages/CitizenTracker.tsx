@@ -10,13 +10,24 @@ export const CitizenTracker: React.FC = () => {
   const { tokenNumber } = useParams<{ tokenNumber: string }>();
   const queryClient = useQueryClient();
 
+  const TERMINAL_STATUSES = [QueueStatus.COMPLETED, QueueStatus.NO_SHOW, QueueStatus.CANCELLED];
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['track', tokenNumber],
     queryFn: async () => {
       const response = await api.get(`/api/queue/track/${tokenNumber}`);
       return response.data.data;
     },
-    refetchInterval: 3000,
+    // Only run if we have a token number
+    enabled: Boolean(tokenNumber),
+    // Stop polling once the token hits a terminal state — no point hammering the DB
+    refetchInterval: (query) => {
+      const status = query.state.data?.token?.status;
+      if (!status || TERMINAL_STATUSES.includes(status)) return false;
+      return 3000;
+    },
+    // Don't retry aggressively on failure
+    retry: 1,
   });
 
   const [feedbackOpen, setFeedbackOpen] = useState(false);

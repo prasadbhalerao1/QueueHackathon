@@ -16,6 +16,7 @@ export interface Branch {
   lat: number;
   lng: number;
   active_desks: number;
+  total_desks: number;
   rush_mode: boolean;
 }
 

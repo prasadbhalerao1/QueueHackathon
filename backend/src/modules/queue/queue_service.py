@@ -35,7 +35,7 @@ async def cascade_delay(branch_id: str, delay_minutes: int):
             from src.modules.whatsapp.whatsapp_service import WhatsAppService
             for t in waiting_tokens:
                 if t.user and hasattr(t.user, "phone") and t.user.phone:
-                    await WhatsAppService.send_message(
+                    await WhatsAppService.send_outbound_whatsapp(
                         t.user.phone,
                         f"We apologize for the delay. Your new expected time is {t.expected_service_time.strftime('%I:%M %p')}."
                     )
@@ -72,18 +72,20 @@ class QueueService:
         except Exception:
             return []
             
+        # Standard Beanie find with status filter
+        active_statuses = [
+            QueueStatus.BOOKED, QueueStatus.ARRIVED, QueueStatus.WAITING,
+            QueueStatus.CALLED, QueueStatus.IN_PROGRESS, QueueStatus.RETURN_LATER
+        ]
+        
         tokens = await Token.find(
             Token.branch.id == branch_obj_id,
-            In(Token.status, [
-                QueueStatus.BOOKED,
-                QueueStatus.ARRIVED,
-                QueueStatus.WAITING,
-                QueueStatus.CALLED,
-                QueueStatus.IN_PROGRESS,
-                QueueStatus.RETURN_LATER
-            ]),
-            fetch_links=True
-        ).sort("+priority", "+expected_service_time").to_list()
+            In(Token.status, active_statuses)
+        ).sort("-priority", "+expected_service_time").to_list()
+
+        # Manually fetch links for each token
+        for token in tokens:
+            await QueueService._manual_fetch_links(token)
 
         return tokens
 
@@ -95,18 +97,66 @@ class QueueService:
             return []
             
         tokens = await Token.find(
-            Token.user.id == uid,
-            fetch_links=True
+            Token.user.id == uid
         ).sort("-created_at").to_list()
         
+        for token in tokens:
+            await QueueService._manual_fetch_links(token)
+            
         return tokens
+
+    @staticmethod
+    async def lookup_tokens_by_phone(phone: str) -> List[Token]:
+        """Public lookup: find all active tokens for a phone number without auth."""
+        user = await User.find_one({"phone": phone})
+        if not user:
+            return []
+
+        active_statuses = [
+            QueueStatus.BOOKED, QueueStatus.ARRIVED,
+            QueueStatus.WAITING, QueueStatus.CALLED, QueueStatus.IN_PROGRESS,
+            QueueStatus.RETURN_LATER
+        ]
+
+        tokens = await Token.find(
+            Token.user.id == user.id,
+            In(Token.status, active_statuses)
+        ).sort("-created_at").to_list()
+
+        for token in tokens:
+            await QueueService._manual_fetch_links(token)
+
+        return tokens
+
+    @staticmethod
+    async def _manual_fetch_links(token: Token):
+        """Safely fetch Link fields manually to avoid Motor 3.x cursor issues with Beanie's fetch_all_links."""
+        if not token:
+            return
+            
+        # Branch
+        if token.branch and hasattr(token.branch, "ref"):
+            token.branch = await Branch.get(token.branch.ref.id)
+        elif token.branch and not hasattr(token.branch, "name"):
+            # It's a Link but maybe not ref? (unlikely in Beanie)
+            pass
+            
+        # User
+        if token.user and hasattr(token.user, "ref"):
+            token.user = await User.get(token.user.ref.id)
+            
+        # Service
+        if token.service and hasattr(token.service, "ref"):
+            token.service = await Service.get(token.service.ref.id)
 
     @staticmethod
     async def advance_token(token_id: str, new_status: QueueStatus, background_tasks: Optional[BackgroundTasks] = None) -> Token:
         """Advances the token state, calculates wait times, and triggers cascading delays if necessary."""
-        token = await Token.get(PydanticObjectId(token_id), fetch_links=True)
+        token = await Token.get(PydanticObjectId(token_id))
         if not token:
             raise QueueOSException(404, "Token not found")
+        
+        await QueueService._manual_fetch_links(token)
 
         old_status = token.status
         token.status = new_status
@@ -162,7 +212,7 @@ class QueueService:
                 from src.modules.whatsapp.whatsapp_service import WhatsAppService
                 if token.user and hasattr(token.user, "phone") and token.user.phone:
                     desk_msg = f" Desk {token.desk_number}" if token.desk_number else ""
-                    await WhatsAppService.send_message(
+                    await WhatsAppService.send_outbound_whatsapp(
                         token.user.phone,
                         f"It's your turn! Token {token.token_number}. Please proceed to{desk_msg} now."
                     )
@@ -195,9 +245,11 @@ class QueueService:
 
     @staticmethod
     async def get_token_status(token_number: str) -> dict:
-        token = await Token.find_one({"token_number": token_number}, fetch_links=True)
+        token = await Token.find_one({"token_number": token_number})
         if not token:
             raise QueueOSException(404, "Token not found")
+            
+        await QueueService._manual_fetch_links(token)
 
         people_ahead = 0
         if token.branch and hasattr(token.branch, "id"):
@@ -369,9 +421,11 @@ class QueueService:
     @staticmethod
     async def transfer_branch(token_id: str, target_branch_id: str) -> Token:
         """Transfer a token from one branch to another."""
-        token = await Token.get(PydanticObjectId(token_id), fetch_links=True)
+        token = await Token.get(PydanticObjectId(token_id))
         if not token:
             raise QueueOSException(404, "Token not found")
+            
+        await QueueService._manual_fetch_links(token)
 
         target_branch = await Branch.get(PydanticObjectId(target_branch_id))
         if not target_branch:
@@ -461,16 +515,46 @@ class QueueService:
                 from src.modules.whatsapp.whatsapp_service import WhatsAppService
                 waiting_tokens = await Token.find(
                     Token.branch.id == branch.id,
-                    In(Token.status, [QueueStatus.WAITING, QueueStatus.ARRIVED, QueueStatus.BOOKED]),
-                    fetch_links=True
+                    In(Token.status, [QueueStatus.WAITING, QueueStatus.ARRIVED, QueueStatus.BOOKED])
                 ).to_list()
                 for t in waiting_tokens:
+                    await QueueService._manual_fetch_links(t)
                     if t.user and hasattr(t.user, "phone") and t.user.phone:
-                        await WhatsAppService.send_message(
+                        await WhatsAppService.send_outbound_whatsapp(
                             t.user.phone,
                             "⚠️ RUSH PROTOCOL: The office is currently overwhelmed. New walk-ins are temporarily blocked. We apologize for the inconvenience."
                         )
             except Exception as e:
                 logger.warning(f"Rush protocol WhatsApp notification failed (non-critical): {e}")
+    @staticmethod
+    async def reset_branch_queue(branch_id: str):
+        """Emergency Reset: Cancel all active/waiting tokens for a branch."""
+        branch_obj_id = PydanticObjectId(branch_id)
+        active_statuses = [
+            QueueStatus.BOOKED, QueueStatus.ARRIVED, QueueStatus.WAITING,
+            QueueStatus.CALLED, QueueStatus.IN_PROGRESS, QueueStatus.RETURN_LATER
+        ]
+        
+        # We don't delete them, we mark them as CANCELLED for history
+        tokens = await Token.find(
+            Token.branch.id == branch_obj_id,
+            In(Token.status, active_statuses)
+        ).to_list()
+        
+        for t in tokens:
+            t.status = QueueStatus.CANCELLED
+            t.notes = "System Emergency Reset by Admin"
+            await t.save()
+            
+        logger.warning(f"[Emergency] Reset branch {branch_id}. {len(tokens)} tokens cancelled.")
+        return len(tokens)
+    @staticmethod
+    async def update_branch_capacity(branch_id: str, capacity: int):
+        branch = await Branch.get(PydanticObjectId(branch_id))
+        if not branch:
+            return None
+        branch.total_desks = capacity
+        await branch.save()
+        return branch
 
         return branch

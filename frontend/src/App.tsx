@@ -4,7 +4,7 @@ import { Login } from './modules/auth/pages/Login';
 import { StaffDashboard } from './modules/queue/components/StaffDashboard';
 import { AdminDashboard } from './modules/admin/components/AdminDashboard';
 import { CitizenTracker } from './modules/queue/pages/CitizenTracker';
-import { CitizenDashboard } from './modules/queue/pages/CitizenDashboard';
+
 import { ProtectedRoute } from './common/components/ProtectedRoute';
 import { MainLayout } from './common/layouts/MainLayout';
 import { LandingPage } from './common/pages/LandingPage';
@@ -43,12 +43,8 @@ export const App: React.FC = () => {
         <Route path="/track/:tokenNumber" element={<CitizenTracker />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         
-        {/* Protected Routes for Citizens */}
-        <Route element={<ProtectedRoute allowedRoles={['CITIZEN', 'OFFICER', 'ADMIN']} />}>
-          <Route element={<MainLayout />}>
-            <Route path="/track" element={<CitizenDashboard />} />
-          </Route>
-        </Route>
+        {/* /track without token redirects home */}
+        <Route path="/track" element={<Navigate to="/" replace />} />
         
         {/* Protected Routes for Staff */}
         <Route element={<ProtectedRoute allowedRoles={['OFFICER', 'ADMIN']} />}>

@@ -24,6 +24,11 @@ async def get_services():
 async def track_token(token_number: str):
     return await QueueController.track_token(token_number)
 
+@queue_router.get("/lookup-by-phone")
+async def lookup_tokens_by_phone(phone: str):
+    """Public endpoint: citizen enters phone number to find their active tokens."""
+    return await QueueController.lookup_by_phone(phone)
+
 @queue_router.get("/my-tokens")
 async def get_my_tokens(current_user = Depends(get_current_user)):
     return await QueueController.get_my_tokens(current_user)
@@ -75,6 +80,13 @@ async def trigger_vip_override(branch_id: str):
 @queue_router.post("/rush/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 async def toggle_rush_protocol(branch_id: str):
     return await QueueController.toggle_rush_protocol(branch_id)
+@queue_router.post("/admin/reset/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+async def reset_branch_queue(branch_id: str):
+    return await QueueController.reset_branch_queue(branch_id)
+
+@queue_router.patch("/admin/branch/{branch_id}/capacity", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+async def update_branch_capacity(branch_id: str, capacity: int):
+    return await QueueController.update_branch_capacity(branch_id, capacity)
 
 
 # --- PARAMETERIZED ROUTES LAST (to avoid conflicts) ---
