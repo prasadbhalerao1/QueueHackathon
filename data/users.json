@@ -1,0 +1,532 @@
+[
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3d8"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Prasad Bhalerao (Super Admin)",
+    "phone": "9999999999",
+    "role": "ADMIN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3d9"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Officer Kadam",
+    "phone": "8888888888",
+    "role": "OFFICER"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3da"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Neha Kale",
+    "phone": "9822000001",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3db"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Karan Joshi",
+    "phone": "9822000002",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3dc"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Gaurav Pawar",
+    "phone": "9822000003",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3dd"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Shruti Patil",
+    "phone": "9822000004",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3de"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Kavya Pawar",
+    "phone": "9822000005",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3df"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Gaikwad",
+    "phone": "9822000006",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e0"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Sneha Deshmukh",
+    "phone": "9822000007",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e1"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Pratik Deshmukh",
+    "phone": "9822000008",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e2"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Karan Gaikwad",
+    "phone": "9822000009",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e3"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Anjali Joshi",
+    "phone": "9822000010",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e4"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Omkar Joshi",
+    "phone": "9822000011",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e5"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aarav Kulkarni",
+    "phone": "9822000012",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e6"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Anjali Shinde",
+    "phone": "9822000013",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e7"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Gaikwad",
+    "phone": "9822000014",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e8"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Megha Joshi",
+    "phone": "9822000015",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3e9"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Riya Shinde",
+    "phone": "9822000016",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ea"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Pawar",
+    "phone": "9822000017",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3eb"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Rahul Gaikwad",
+    "phone": "9822000018",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ec"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Priya Deshmukh",
+    "phone": "9822000019",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ed"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Pratik Pawar",
+    "phone": "9822000020",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ee"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aarav Shinde",
+    "phone": "9822000021",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ef"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Pratik Patil",
+    "phone": "9822000022",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f0"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Siddharth Kulkarni",
+    "phone": "9822000023",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f1"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Pratik Patil",
+    "phone": "9822000024",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f2"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Megha Gaikwad",
+    "phone": "9822000025",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f3"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Siddharth Kulkarni",
+    "phone": "9822000026",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f4"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Kavya Deshmukh",
+    "phone": "9822000027",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f5"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Neha Gaikwad",
+    "phone": "9822000028",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f6"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Siddharth Patil",
+    "phone": "9822000029",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f7"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Omkar Joshi",
+    "phone": "9822000030",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f8"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Rahul Kale",
+    "phone": "9822000031",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3f9"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Gaikwad",
+    "phone": "9822000032",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3fa"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Arjun Shinde",
+    "phone": "9822000033",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3fb"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Anjali Pawar",
+    "phone": "9822000034",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3fc"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Shruti Patil",
+    "phone": "9822000035",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3fd"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Omkar Kale",
+    "phone": "9822000036",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3fe"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Arjun Patil",
+    "phone": "9822000037",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b3ff"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Siddharth Deshmukh",
+    "phone": "9822000038",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b400"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Karan Kale",
+    "phone": "9822000039",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b401"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Shinde",
+    "phone": "9822000040",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b402"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aarav Deshmukh",
+    "phone": "9822000041",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b403"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Anjali Deshmukh",
+    "phone": "9822000042",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b404"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Rahul Joshi",
+    "phone": "9822000043",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b405"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Riya Pawar",
+    "phone": "9822000044",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b406"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Rohan Joshi",
+    "phone": "9822000045",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b407"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Aditya Kale",
+    "phone": "9822000046",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b408"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Rahul Gaikwad",
+    "phone": "9822000047",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b409"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Omkar Deshmukh",
+    "phone": "9822000048",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b40a"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Shruti Patil",
+    "phone": "9822000049",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b40b"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Megha Pawar",
+    "phone": "9822000050",
+    "role": "CITIZEN"
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b40c"
+    },
+    "hashed_password": "$2b$12$yitsSx9b5R416AWnGO8/V.hwTEbKK7LatvIQVxLWaRxOfYhqQlliW",
+    "language_pref": "en",
+    "name": "Test Citizen",
+    "phone": "7777777777",
+    "role": "CITIZEN"
+  }
+]

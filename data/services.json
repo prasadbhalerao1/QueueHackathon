@@ -1,0 +1,53 @@
+[
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b40f"
+    },
+    "base_duration_minutes": 15,
+    "name": "Aadhaar Card Biometric Update",
+    "priority_level": 3,
+    "required_docs": []
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b410"
+    },
+    "base_duration_minutes": 20,
+    "name": "Income Certificate",
+    "priority_level": 2,
+    "required_docs": [
+      "ID Proof",
+      "Salary Slip"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b411"
+    },
+    "base_duration_minutes": 30,
+    "name": "Property Tax Dispute",
+    "priority_level": 2,
+    "required_docs": [
+      "Title Deed",
+      "ID Proof"
+    ]
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b412"
+    },
+    "base_duration_minutes": 10,
+    "name": "Water Bill Name Change",
+    "priority_level": 3,
+    "required_docs": []
+  },
+  {
+    "_id": {
+      "$oid": "69e96d284a41bec0f4c4b413"
+    },
+    "base_duration_minutes": 25,
+    "name": "Driving License Renewal",
+    "priority_level": 1,
+    "required_docs": []
+  }
+]
