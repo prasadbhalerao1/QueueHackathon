@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.common.database.connection import init_db
 from src.common.exceptions.handlers import register_exception_handlers
+from src.common.config.config import get_allowed_origins
 
 
 @asynccontextmanager
@@ -18,9 +19,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Configure CORS with dynamic origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
