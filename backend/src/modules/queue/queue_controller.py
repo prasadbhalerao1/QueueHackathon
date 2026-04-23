@@ -51,9 +51,23 @@ class QueueController:
     @staticmethod
     async def advance_token(token_id: str, req: AdvanceTokenRequest, background_tasks: BackgroundTasks):
         try:
-            token = await QueueService.advance_token(token_id, req.new_status, background_tasks)
+            token = await QueueService.advance_token(token_id, req.new_status, background_tasks, req.desk_number)
             return {
                 "status": "success",
+                "data": serialize_token(token)
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    @staticmethod
+    async def undo_last_action(token_id: str):
+        try:
+            token = await QueueService.undo_last_action(token_id)
+            return {
+                "status": "success",
+                "message": "Last action undone successfully",
                 "data": serialize_token(token)
             }
         except Exception as e:
@@ -88,16 +102,6 @@ class QueueController:
     async def transfer_branch(token_id: str, req: TransferRequest):
         try:
             token = await QueueService.transfer_branch(token_id, req.target_branch_id)
-            return {"status": "success", "data": serialize_token(token)}
-        except Exception as e:
-            if isinstance(e, QueueOSException):
-                raise e
-            raise QueueOSException(500, str(e))
-
-    @staticmethod
-    async def check_in(req: CheckInRequest):
-        try:
-            token = await QueueService.check_in(req.token_number)
             return {"status": "success", "data": serialize_token(token)}
         except Exception as e:
             if isinstance(e, QueueOSException):
@@ -140,6 +144,18 @@ class QueueController:
             if isinstance(e, QueueOSException):
                 raise e
             raise QueueOSException(500, str(e))
+
+    @staticmethod
+    async def pause_desk(branch_id: str, desk_number: int):
+        try:
+            count = await QueueService.pause_desk(branch_id, desk_number)
+            return {
+                "status": "success",
+                "message": f"Desk {desk_number} paused. {count} tokens reassigned to pool."
+            }
+        except Exception as e:
+            raise QueueOSException(500, str(e))
+
     @staticmethod
     async def reset_branch_queue(branch_id: str):
         try:
@@ -147,13 +163,14 @@ class QueueController:
             return {"status": "success", "message": f"Successfully reset branch. {count} tokens cancelled."}
         except Exception as e:
             raise QueueOSException(500, str(e))
+
     @staticmethod
     async def update_branch_capacity(branch_id: str, capacity: int):
         try:
             branch = await QueueService.update_branch_capacity(branch_id, capacity)
             if not branch:
                 raise QueueOSException(404, "Branch not found")
-            return {"status": "success", "message": f"Capacity updated to {capacity}", "data": branch}
+            return {"status": "success", "message": f"Capacity updated to {capacity}", "data": {"id": str(branch.id), "capacity": branch.active_desks}}
         except Exception as e:
             raise QueueOSException(500, str(e))
 
@@ -165,7 +182,7 @@ class QueueController:
                 "status": "success",
                 "data": [
                     {"id": str(b.id), "name": b.name, "lat": b.lat, "lng": b.lng,
-                     "active_desks": b.active_desks, "rush_mode": b.rush_mode}
+                     "active_desks": b.active_desks, "total_desks": b.active_desks, "rush_mode": b.rush_mode}
                     for b in branches
                 ]
             }

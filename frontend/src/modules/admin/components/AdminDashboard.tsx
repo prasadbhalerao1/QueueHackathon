@@ -5,9 +5,11 @@ import {
   Snackbar, Divider, Stack, IconButton, Tooltip, Paper, Skeleton, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, Backdrop
 } from '@mui/material';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import api from '../../../common/api';
-import { useAnalytics, useBranches } from '../../queue/hooks/useQueue';
+import { useQueryClient } from '@tanstack/react-query';
+import { 
+  useAnalytics, useBranches, useToggleRush, useIssueVip, 
+  useResetQueue, useUpdateCapacity 
+} from '../../queue/hooks/useQueue';
 import { StaffDashboard } from '../../queue/components/StaffDashboard';
 import {
   Settings as SettingsIcon,
@@ -80,59 +82,19 @@ export const AdminDashboard: React.FC = () => {
   const { data: analytics, isLoading: analyticsLoading } = useAnalytics(selectedBranchId, !!selectedBranchId);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const { mutate: toggleRush, isPending: isTogglingRush } = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post(`/api/queue/rush/${selectedBranchId}`);
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['analytics', selectedBranchId] });
-      queryClient.invalidateQueries({ queryKey: ['branches'] });
-      setSnackbarMessage('Rush Protocol status updated');
-    }
-  });
+  const { mutate: toggleRush, isPending: isTogglingRush } = useToggleRush(selectedBranchId);
+  const { mutate: triggerVip, isPending: isTriggeringVip } = useIssueVip(selectedBranchId);
+  const { mutate: resetQueue, isPending: isResetting } = useResetQueue(selectedBranchId);
+  const { mutate: updateCapacity, isPending: isUpdatingCapacity } = useUpdateCapacity(selectedBranchId);
 
-  const { mutate: triggerVip, isPending: isTriggeringVip } = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post(`/api/queue/vip/${selectedBranchId}`);
-      return data;
-    },
-    onSuccess: () => {
-      setSnackbarMessage('VIP Override Successful: High-priority token generated');
-      queryClient.invalidateQueries({ queryKey: ['queue', selectedBranchId] });
-      queryClient.invalidateQueries({ queryKey: ['analytics', selectedBranchId] });
-    }
-  });
-
-  const { mutate: resetQueue, isPending: isResetting } = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post(`/api/queue/admin/reset/${selectedBranchId}`);
-      return data;
-    },
-    onSuccess: () => {
-      setSnackbarMessage('EMERGENCY RESET: All branch tokens cleared.');
-      queryClient.invalidateQueries({ queryKey: ['queue', selectedBranchId] });
-      queryClient.invalidateQueries({ queryKey: ['analytics', selectedBranchId] });
-    },
-    onError: (error) => {
-      setSnackbarMessage(`Reset failed: ${error.message || 'Unknown error'}`);
-    }
-  });
-
-  const { mutate: updateCapacity, isPending: isUpdatingCapacity } = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.patch(`/api/queue/admin/branch/${selectedBranchId}/capacity`, null, {
-        params: { capacity: newCapacity }
-      });
-      return data;
-    },
-    onSuccess: () => {
-      setSnackbarMessage('Branch capacity successfully updated.');
-      setCapacityDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ['analytics', selectedBranchId] });
-      queryClient.invalidateQueries({ queryKey: ['branches'] });
-    }
-  });
+  const handleUpdateCapacity = () => {
+    updateCapacity(newCapacity, {
+      onSuccess: () => {
+        setSnackbarMessage('Branch capacity successfully updated.');
+        setCapacityDialogOpen(false);
+      }
+    });
+  };
 
   if (branchesLoading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
@@ -322,7 +284,7 @@ export const AdminDashboard: React.FC = () => {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setCapacityDialogOpen(false)} color="inherit">Cancel</Button>
-          <Button variant="contained" onClick={() => updateCapacity()} disabled={isNaN(newCapacity) || newCapacity < 1} sx={{ fontWeight: 800, px: 3 }}>Apply Changes</Button>
+          <Button variant="contained" onClick={() => handleUpdateCapacity()} disabled={isNaN(newCapacity) || newCapacity < 1} sx={{ fontWeight: 800, px: 3 }}>Apply Changes</Button>
         </DialogActions>
       </Dialog>
 

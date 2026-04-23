@@ -81,6 +81,7 @@ class TokenResponse(BaseModel):
 
 class AdvanceTokenRequest(BaseModel):
     new_status: QueueStatus
+    desk_number: Optional[int] = None
 
 
 class WalkInRequest(BaseModel):
@@ -123,6 +124,7 @@ class BranchResponse(BaseModel):
     lat: float = 0.0
     lng: float = 0.0
     active_desks: int = 1
+    total_desks: int = 1 # Capacity
     rush_mode: bool = False
 
 

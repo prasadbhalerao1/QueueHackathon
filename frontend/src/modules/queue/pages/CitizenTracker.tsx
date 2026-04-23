@@ -88,6 +88,7 @@ export const CitizenTracker: React.FC = () => {
   // Dynamic Progress Logic
   const initialEstimate = estimated_wait_minutes > 0 ? estimated_wait_minutes + (people_ahead * 10) : 60; // fallback scale
   const progressPercent = isCalled || isCompleted ? 100 : Math.max(5, 100 - ((people_ahead * 10 / initialEstimate) * 100));
+  const displayTime = token.expected_service_time ? new Date(token.expected_service_time + (token.expected_service_time.endsWith('Z') ? '' : 'Z')) : null;
 
   return (
     <Box sx={{ 
@@ -155,18 +156,18 @@ export const CitizenTracker: React.FC = () => {
             </Box>
           ) : (
             <Box sx={{ p: 3, borderTop: '1px solid #e2e8f0', bgcolor: '#f1f5f9' }}>
-              <Box display="flex" justifyContent="space-between" mb={2}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" fontWeight="bold">Queue Progress</Typography>
                 <Typography variant="body2" color="primary.main" fontWeight="bold">{people_ahead} Ahead</Typography>
               </Box>
               <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 10, borderRadius: 5 }} />
               
-              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2} mt={3}>
-                <Box p={2} bgcolor="#ffffff" borderRadius={3} textAlign="center" boxShadow="0 2px 4px rgba(0,0,0,0.02)">
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 3 }}>
+                <Box sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 3, textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                   <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Est. Wait</Typography>
                   <Typography variant="h5" fontWeight="900" color="info.main">{estimated_wait_minutes}m</Typography>
                 </Box>
-                <Box p={2} bgcolor="#ffffff" borderRadius={3} textAlign="center" boxShadow="0 2px 4px rgba(0,0,0,0.02)">
+                <Box sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 3, textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                   <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Serving</Typography>
                   <Typography variant="h5" fontWeight="900">{current_serving || '--'}</Typography>
                 </Box>
@@ -176,7 +177,7 @@ export const CitizenTracker: React.FC = () => {
         </Card>
 
         {/* Action Buttons */}
-        <Box display="flex" flexDirection="column" gap={2}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {isWaitingOrArrived && (
             <Button 
               variant="contained" 

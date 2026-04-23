@@ -33,10 +33,6 @@ async def lookup_tokens_by_phone(phone: str):
 async def get_my_tokens(current_user = Depends(get_current_user)):
     return await QueueController.get_my_tokens(current_user)
 
-@queue_router.post("/check-in")
-async def check_in(request: CheckInRequest):
-    return await QueueController.check_in(request)
-
 
 # --- STAFF/ADMIN ROUTES ---
 
@@ -47,6 +43,10 @@ async def register_walk_in(request: WalkInRequest):
 @queue_router.patch("/advance/{token_id}", dependencies=[Depends(RoleChecker([UserRole.OFFICER, UserRole.ADMIN]))])
 async def advance_token(token_id: str, request: AdvanceTokenRequest, background_tasks: BackgroundTasks):
     return await QueueController.advance_token(token_id, request, background_tasks)
+
+@queue_router.post("/undo/{token_id}", dependencies=[Depends(RoleChecker([UserRole.OFFICER, UserRole.ADMIN]))])
+async def undo_last_action(token_id: str):
+    return await QueueController.undo_last_action(token_id)
 
 @queue_router.post("/transfer/{token_id}", dependencies=[Depends(RoleChecker([UserRole.OFFICER, UserRole.ADMIN]))])
 async def transfer_branch(token_id: str, request: TransferRequest):
@@ -61,13 +61,7 @@ async def submit_feedback(token_id: str, request: FeedbackRequest):
     return await QueueController.submit_feedback(token_id, request)
 
 
-# --- ADMIN / DEMO ROUTES ---
-
-@queue_router.post("/admin/seed/demo")
-async def seed_demo():
-    from src.common.seed import seed_demo_data
-    await seed_demo_data()
-    return {"message": "Massive demo data seeded successfully! 30+ rich Edge Case users attached."}
+# --- ADMIN / DASHBOARD ROUTES ---
 
 @queue_router.get("/analytics/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 async def get_analytics(branch_id: str):
@@ -80,6 +74,11 @@ async def trigger_vip_override(branch_id: str):
 @queue_router.post("/rush/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 async def toggle_rush_protocol(branch_id: str):
     return await QueueController.toggle_rush_protocol(branch_id)
+
+@queue_router.post("/pause-desk/{branch_id}/{desk_number}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+async def pause_desk(branch_id: str, desk_number: int):
+    return await QueueController.pause_desk(branch_id, desk_number)
+
 @queue_router.post("/admin/reset/{branch_id}", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
 async def reset_branch_queue(branch_id: str):
     return await QueueController.reset_branch_queue(branch_id)
@@ -88,8 +87,14 @@ async def reset_branch_queue(branch_id: str):
 async def update_branch_capacity(branch_id: str, capacity: int):
     return await QueueController.update_branch_capacity(branch_id, capacity)
 
+@queue_router.post("/admin/seed/demo", dependencies=[Depends(RoleChecker([UserRole.ADMIN]))])
+async def seed_demo():
+    from src.common.seed import seed_demo_data
+    await seed_demo_data()
+    return {"message": "Demo data seeded successfully!"}
 
-# --- PARAMETERIZED ROUTES LAST (to avoid conflicts) ---
+
+# --- PARAMETERIZED ROUTES LAST ---
 
 @queue_router.get("/{branch_id}")
 async def get_active_queue(branch_id: str):

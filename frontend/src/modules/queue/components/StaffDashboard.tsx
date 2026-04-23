@@ -8,7 +8,7 @@ import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../../../common/api';
 import { 
   useLiveQueue, useAdvanceToken, useBranches, useServices, 
-  useTransferToken, useToggleRush 
+  useTransferToken, useToggleRush, useUndoAction, usePauseDesk
 } from '../hooks/useQueue';
 import { QueueStatus, Token } from '../types';
 import {
@@ -41,12 +41,14 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
   const { mutate: advanceToken } = useAdvanceToken(selectedBranchId);
   const { mutate: transferToken } = useTransferToken(selectedBranchId);
   const { mutate: toggleRush } = useToggleRush(selectedBranchId);
+  const { mutate: undoAction } = useUndoAction(selectedBranchId);
+  const { mutate: pauseDesk } = usePauseDesk(selectedBranchId);
   
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   
   // Undo State
-  const [lastAction, setLastAction] = useState<{ token: Token, prevStatus: QueueStatus, newStatus: QueueStatus } | null>(null);
+  const [lastActionTokenId, setLastActionTokenId] = useState<string | null>(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
@@ -66,8 +68,8 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
 
   // Filtering Queue
   const servingQueue = useMemo(() => 
-    queue?.filter(t => t.status === QueueStatus.CALLED || t.status === QueueStatus.IN_PROGRESS) || []
-  , [queue]);
+    queue?.filter(t => (t.status === QueueStatus.CALLED || t.status === QueueStatus.IN_PROGRESS) && t.desk_number === parseInt(deskNumber)) || []
+  , [queue, deskNumber]);
 
   const waitingQueue = useMemo(() => 
     queue?.filter(t => t.status === QueueStatus.WAITING || t.status === QueueStatus.ARRIVED || t.status === QueueStatus.BOOKED || t.status === QueueStatus.NO_SHOW) || []
@@ -102,25 +104,36 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
 
   const handleAction = (token: Token, newStatus: QueueStatus) => {
     if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
-    setLastAction({ token, prevStatus: token.status, newStatus });
+    setLastActionTokenId(token.id);
     
-    advanceToken({ tokenId: token.id!, newStatus }, {
+    advanceToken({ tokenId: token.id!, newStatus, deskNumber: parseInt(deskNumber) }, {
       onSuccess: () => {
         setSnackbarMessage(`Token ${token.token_number} updated to ${newStatus.replace('_', ' ')}`);
         setSnackbarOpen(true);
-        undoTimeoutRef.current = setTimeout(() => setLastAction(null), 5000);
+        undoTimeoutRef.current = setTimeout(() => setLastActionTokenId(null), 10000); // 10s undo window in UI
       },
     });
   };
 
   const handleUndo = () => {
-    if (lastAction) {
+    if (lastActionTokenId) {
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
-      advanceToken({ tokenId: lastAction.token.id!, newStatus: lastAction.prevStatus }, {
+      undoAction(lastActionTokenId, {
         onSuccess: () => {
-          setSnackbarMessage(`Undid action. ${lastAction.token.token_number} reverted to ${lastAction.prevStatus.replace('_', ' ')}`);
+          setSnackbarMessage(`Action undone successfully.`);
           setSnackbarOpen(true);
-          setLastAction(null);
+          setLastActionTokenId(null);
+        }
+      });
+    }
+  };
+
+  const handlePauseDesk = () => {
+    if (window.confirm(`Are you sure you want to pause Desk ${deskNumber}? All active tokens at this desk will be returned to the waiting pool.`)) {
+      pauseDesk(parseInt(deskNumber), {
+        onSuccess: () => {
+          setSnackbarMessage(`Desk ${deskNumber} paused. Go take a break!`);
+          setSnackbarOpen(true);
         }
       });
     }
@@ -221,6 +234,18 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                 sx={{ borderRadius: 2, fontWeight: 800, px: 3, height: 48 }}
               >
                 {currentBranch?.rush_mode ? "LIFT RUSH" : "RUSH MODE"}
+              </Button>
+            </Tooltip>
+            <Tooltip title="Pause Desk (Return tokens to pool)">
+              <Button 
+                variant="outlined" 
+                color="info" 
+                aria-label="Pause My Desk"
+                startIcon={<TimeIcon />}
+                onClick={handlePauseDesk}
+                sx={{ borderRadius: 2, fontWeight: 800, px: 3, height: 48, mr: 2 }}
+              >
+                PAUSE DESK
               </Button>
             </Tooltip>
             <Button 
@@ -352,14 +377,14 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
 
                           <Typography variant="caption" sx={{ fontWeight: 700 }}>
                             {token.expected_service_time 
-                              ? new Date(token.expected_service_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                              ? new Date(token.expected_service_time + (token.expected_service_time.endsWith('Z') ? '' : 'Z')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                               : '--:--'}
                           </Typography>
                       
                       <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                           <TimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                          <Typography variant="caption" sx={{ fontWeight: 700 }}>{new Date(token.expected_service_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700 }}>{new Date(token.expected_service_time + (token.expected_service_time.endsWith('Z') ? '' : 'Z')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Typography>
                         </Box>
                         <Typography variant="caption" sx={{ fontWeight: 700, color: 'primary.main' }}>{token.service?.name}</Typography>
                       </Stack>
@@ -371,9 +396,16 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                           Grace Re-entry
                         </Button>
                       ) : (
-                        <Button fullWidth variant="contained" color="primary" size="small" onClick={() => handleAction(token, QueueStatus.CALLED)} sx={{ fontWeight: 800 }}>
-                          Call
-                        </Button>
+                        <>
+                          {(token.status === QueueStatus.BOOKED || token.status === QueueStatus.WAITING) && (
+                            <Button fullWidth variant="outlined" color="success" size="small" onClick={() => handleAction(token, QueueStatus.ARRIVED)} sx={{ fontWeight: 800 }}>
+                              Arrived
+                            </Button>
+                          )}
+                          <Button fullWidth variant="contained" color="primary" size="small" onClick={() => handleAction(token, QueueStatus.CALLED)} sx={{ fontWeight: 800 }}>
+                            Call
+                          </Button>
+                        </>
                       )}
                       <Tooltip title="Transfer to another branch">
                         <IconButton size="small" color="inherit" onClick={() => { setTransferTokenData(token); setTransferModalOpen(true); }} sx={{ border: '1px solid #e2e8f0' }}>
@@ -441,7 +473,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
           severity="success" 
           variant="filled" 
           sx={{ width: '100%', borderRadius: 2, fontWeight: 800 }}
-          action={lastAction && (
+          action={lastActionTokenId && (
             <Button color="inherit" size="small" onClick={handleUndo} startIcon={<UndoIcon />} sx={{ fontWeight: 900 }}>UNDO</Button>
           )}
         >

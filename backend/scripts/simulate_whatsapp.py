@@ -17,7 +17,7 @@ async def simulate(sender: str, body: str):
     print(f"From: {sender}")
     print(f"Body: {body}\n")
     
-    response = await WhatsAppService.process_incoming_message(sender, body)
+    response = await WhatsAppService.process_webhook(sender, body)
     
     print("-" * 30)
     print(f"[System Response]\n{response}")

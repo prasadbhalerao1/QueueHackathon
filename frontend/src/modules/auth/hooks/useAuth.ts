@@ -16,6 +16,21 @@ export const useLoginMutation = () => {
   });
 };
 
+export const useCitizenLoginMutation = () => {
+  return useMutation({
+    mutationFn: async (credentials: { phone: string }) => {
+      const { data } = await api.post('/api/auth/citizen-login', credentials);
+      return data.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem('jwt_token', data.access_token);
+      localStorage.setItem('user_role', data.role);
+      if (data.user_name) localStorage.setItem('user_name', data.user_name);
+      if (data.user_id) localStorage.setItem('user_id', data.user_id);
+    },
+  });
+};
+
 
 
 

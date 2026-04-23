@@ -40,6 +40,8 @@ class Token(Document):
     transfer_from_branch: Optional[Link[Branch]] = None
     rating: Optional[int] = Field(default=None, ge=1, le=5)
     notes: Optional[str] = None
+    last_status: Optional[QueueStatus] = None
+    last_action_time: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:

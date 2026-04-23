@@ -1,57 +1,144 @@
 # QueueOS Testing Guide: WhatsApp, Gemini, and Twilio
 
-This document explains how to test the AI-powered WhatsApp integration for the QueueOS Hackathon.
+This file is a quick-start guide. For the complete all-in-one runbook, use `WHATSAPP_TESTING_RUNBOOK.md`.
 
 ## 1. Environment Configuration
-Ensure your `backend/.env` contains the following keys:
-```env
-# Twilio Configuration
-TWILIO_ACCOUNT_SID=your_sid_here
-TWILIO_AUTH_TOKEN=your_token_here
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886 (Twilio Sandbox)
 
-# Gemini AI Configuration
-GEMINI_API_KEY=your_gemini_key_here
+Ensure `backend/.env` includes:
+
+```env
+MONGODB_URI=...
+GEMINI_API_KEY=...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_WHATSAPP_NUMBER=+14155238886
+SECRET_KEY=...
 ```
 
-## 2. Testing the WhatsApp Chatbot (Local Simulation)
-Since you might not have a public URL (ngrok) yet, you can simulate a WhatsApp message coming into the system.
+Important:
+- Keep `TWILIO_WHATSAPP_NUMBER` as `+14155238886` (no `whatsapp:` prefix).
 
-### A. The "Check Status" Flow
-1. Open a terminal and run:
-   ```bash
-   # Replace with a real token number from your DB (e.g., A-101)
-   python backend/scripts/simulate_whatsapp.py --from "+919999999999" --body "Check status for A-101"
-   ```
-2. The system will:
-   - Call Gemini to "understand" the user intent.
-   - Query MongoDB for token A-101.
-   - Print the simulated WhatsApp response.
+## **🔑 Live Demo Credentials (Password: password)**
+| Role | Phone Number | Purpose |
+| :--- | :--- | :--- |
+| **Super Admin** | `9999999999` | Access analytics, capacity, and protocols |
+| **Staff Officer** | `8888888888` | Operational dashboard (Call Next, Advance) |
+| **Test Citizen** | `7777777777` | Check live status and feedback tracker |
 
-### B. The AI Natural Language Flow
-Gemini is used to parse intent. You can test natural phrases:
-- "Hey, what's my position in the line? My token is B-202"
-- "How long until I'm called for A-123?"
+---
 
-## 3. Testing the Automated Alerts
-Alerts are triggered automatically during staff operations:
+## 2. Start Services
 
-### A. Status Updates
-When a staff member clicks **"Call Next"** or **"Start Service"**:
-- The backend triggers a `WhatsAppService.send_status_update`.
-- You can check the backend logs to see: `[WhatsApp] Sending update to +91...: Your token A-101 is now CALLED at Desk 4.`
+### Backend
 
-### B. Rush Protocol (Mass Broadcast)
-1. Go to the **Admin Dashboard**.
-2. Click **"Activate Rush Protocol"**.
-3. Check logs: You will see a broadcast loop sending messages to ALL waiting citizens informing them of high delays.
+```powershell
+Set-Location E:\Programs\Hackathon\backend
+uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-## 4. Live End-to-End Testing (Requires ngrok)
-1. Start ngrok: `ngrok http 8000`.
-2. Copy the `https` URL.
-3. In your Twilio Console (WhatsApp Sandbox Settings), set the "When a message comes in" URL to:
-   `https://YOUR_NGROK_URL.ngrok-free.app/api/whatsapp/webhook`
-4. Send a WhatsApp message to the Twilio Sandbox number from your phone.
+### Frontend
 
-## 5. Gemini Prompt Engineering
-If you want to tweak the AI's personality, look at `backend/src/modules/whatsapp/whatsapp_service.py` in the `_parse_intent_with_ai` method. You can modify the system instruction to be more formal or helpful.
+```powershell
+Set-Location E:\Programs\Hackathon\frontend
+npm run dev
+```
+
+### ngrok
+
+```powershell
+Set-Location E:\Programs\Hackathon\backend
+ngrok http 8000
+```
+
+## 3. Twilio Sandbox Setup
+
+In Twilio Console -> Try WhatsApp -> Sandbox settings:
+
+- When a message comes in: `https://font-unmindful-manhood.ngrok-free.dev/api/whatsapp/webhook`
+- Method: `POST`
+
+From phone, join sandbox by sending:
+
+```text
+join what-nervous
+```
+
+to `+1 415 523 8886`.
+
+## 4. Local Simulation Test (No Twilio)
+
+```bash
+python backend/scripts/simulate_whatsapp.py --from_phone "+918055882377" --body "Check status"
+```
+
+## 5. Direct Webhook Test with curl (No Twilio UI)
+
+### Git Bash
+
+```bash
+curl -X POST \
+  -H "ngrok-skip-browser-warning: true" \
+  -H "User-Agent: QueueOS-TestClient/1.0" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  --data "From=whatsapp:%2B918055882377&Body=Check%20status" \
+  "https://font-unmindful-manhood.ngrok-free.dev/api/whatsapp/webhook"
+```
+
+### PowerShell
+
+```powershell
+curl.exe -X POST -H "ngrok-skip-browser-warning: true" -H "User-Agent: QueueOS-TestClient/1.0" -H "Content-Type: application/x-www-form-urlencoded" --data "From=whatsapp:%2B918055882377&Body=Check%20status" "https://font-unmindful-manhood.ngrok-free.dev/api/whatsapp/webhook"
+```
+
+## 6. Postman Test
+
+Request:
+- Method: `POST`
+- URL: `https://font-unmindful-manhood.ngrok-free.dev/api/whatsapp/webhook`
+
+Headers:
+- `ngrok-skip-browser-warning: true`
+- `User-Agent: QueueOS-TestClient/1.0`
+- `Content-Type: application/x-www-form-urlencoded`
+
+Body (`x-www-form-urlencoded`):
+- `From = whatsapp:+918055882377`
+- `Body = Check status`
+
+## 7. Verify DB Reflection
+
+Quick API check:
+
+```bash
+curl -s -H "ngrok-skip-browser-warning: true" -H "User-Agent: QueueOS-TestClient/1.0" "https://font-unmindful-manhood.ngrok-free.dev/api/queue/lookup-by-phone?phone=%2B918055882377"
+```
+
+MongoDB checks:
+- `users` collection: `{ "phone": "+918055882377" }`
+- `tokens` collection: `{ "booking_type": "WHATSAPP" }`
+
+## 8. Prompt / Intent Scenarios
+
+Use these message bodies to validate AI intent handling:
+- `I need Aadhaar Update` (BOOKING)
+- `Check status` (STATUS)
+- `I need to get some government work done today` (CLARIFICATION)
+
+## 9. Common Issues
+
+### Twilio 429 / 63038
+
+- Trial account exceeded daily message limit.
+- Use local simulation or direct webhook calls while waiting for reset.
+
+### ngrok warning page
+
+- Include `ngrok-skip-browser-warning` or custom `User-Agent` header in programmatic calls.
+
+### Gemini AI down message
+
+- Validate `GEMINI_API_KEY`, quota, and restart backend.
+
+---
+
+Use `WHATSAPP_TESTING_RUNBOOK.md` for full details, troubleshooting matrix, and full checklist.

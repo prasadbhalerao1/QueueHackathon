@@ -66,8 +66,11 @@ export const useAdvanceToken = (branchId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ tokenId, newStatus }: { tokenId: string; newStatus: QueueStatus }) => {
-      const payload: AdvanceTokenRequest = { new_status: newStatus };
+    mutationFn: async ({ tokenId, newStatus, deskNumber }: { tokenId: string; newStatus: QueueStatus; deskNumber?: number }) => {
+      const payload: AdvanceTokenRequest & { desk_number?: number } = { 
+        new_status: newStatus,
+        desk_number: deskNumber 
+      };
       const { data } = await api.patch<JSendResponse<Token>>(`/api/queue/advance/${tokenId}`, payload);
       if (data.status !== 'success') throw new Error(data.message || 'Failed to advance token');
       return data.data;
@@ -136,6 +139,83 @@ export const useToggleRush = (branchId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
       queryClient.invalidateQueries({ queryKey: ['branches'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics', branchId] });
+    },
+  });
+};
+
+export const useUndoAction = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (tokenId: string) => {
+      const { data } = await api.post<JSendResponse<Token>>(`/api/queue/undo/${tokenId}`);
+      if (data.status !== 'success') throw new Error(data.message || 'Undo failed');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['analytics', branchId] });
+    },
+  });
+};
+
+export const usePauseDesk = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (deskNumber: number) => {
+      const { data } = await api.post<JSendResponse<{ affected: number }>>(`/api/queue/pause-desk/${branchId}/${deskNumber}`);
+      if (data.status !== 'success') throw new Error(data.message || 'Failed to pause desk');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['analytics', branchId] });
+    },
+  });
+};
+
+export const useIssueVip = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<JSendResponse<Token>>(`/api/queue/vip/${branchId}`);
+      if (data.status !== 'success') throw new Error(data.message || 'Failed to issue VIP token');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+    },
+  });
+};
+
+export const useResetQueue = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post<JSendResponse<{ affected: number }>>(`/api/queue/admin/reset/${branchId}`);
+      if (data.status !== 'success') throw new Error(data.message || 'Reset failed');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['queue', branchId] });
+      queryClient.invalidateQueries({ queryKey: ['analytics', branchId] });
+    },
+  });
+};
+
+export const useUpdateCapacity = (branchId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (capacity: number) => {
+      const { data } = await api.patch<JSendResponse<Branch>>(`/api/queue/admin/branch/${branchId}/capacity`, null, {
+        params: { capacity }
+      });
+      if (data.status !== 'success') throw new Error(data.message || 'Capacity update failed');
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['branches'] });
+      queryClient.invalidateQueries({ queryKey: ['analytics', branchId] });
     },
   });
 };
