@@ -6,23 +6,32 @@ import { useMutation } from '@tanstack/react-query';
 import api from '../../../common/api';
 import { useTranslation } from 'react-i18next';
 
+interface ChatMessage {
+  role: 'user' | 'bot';
+  text: string;
+  time: string;
+}
+
 // Chat Widget Component
-export const AIChatWidget: React.FC = () => {
+export const AIChatWidget: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
   // Local state for chat UI
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<{role: 'user' | 'bot', text: string, time: string}[]>([]);
-  const [input, setInput] = useState('');
+  const [open, setOpen] = useState<boolean>(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState<string>('');
   const endRef = useRef<HTMLDivElement>(null);
 
   // Send message to Gemini backend
-  const { mutate: askBot, isPending } = useMutation({
-    mutationFn: async (message: string) => {
+  const { mutate: askBot, isPending } = useMutation<string, Error, string>({
+    mutationFn: async (message: string): Promise<string> => {
       const { data } = await api.post('/api/chat/ask', { message });
       return data.data.reply;
     },
-    onSuccess: (reply: string) => {
-      setMessages(prev => [...prev, { role: 'bot', text: reply, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) }]);
+    onSuccess: (reply: string): void => {
+      setMessages((prev: ChatMessage[]): ChatMessage[] => [
+        ...prev, 
+        { role: 'bot', text: reply, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+      ]);
     }
   });
 

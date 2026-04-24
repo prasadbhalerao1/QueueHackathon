@@ -6,19 +6,21 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '../../../common/components/LanguageToggle';
 
-export const Register: React.FC = () => {
+import { AxiosError } from 'axios';
+
+export const Register: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [successToast, setSuccessToast] = useState(false);
+  const [name, setName] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [successToast, setSuccessToast] = useState<boolean>(false);
 
   const { mutate: register, isPending } = useRegisterMutation();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     setErrorMsg('');
     
@@ -30,14 +32,15 @@ export const Register: React.FC = () => {
     register(
       { name: name.trim(), phone: phone.trim(), password: password.trim() },
       {
-        onSuccess: () => {
+        onSuccess: (): void => {
           setSuccessToast(true);
-          setTimeout(() => {
+          setTimeout((): void => {
             navigate('/citizen/dashboard');
           }, 1500);
         },
-        onError: (error: any) => {
-          setErrorMsg(error.response?.data?.message || t('registrationFailed'));
+        onError: (error: Error | AxiosError): void => {
+          const axiosError = error as AxiosError<{message: string}>;
+          setErrorMsg(axiosError.response?.data?.message || t('registrationFailed'));
         },
       }
     );

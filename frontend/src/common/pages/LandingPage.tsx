@@ -23,8 +23,10 @@ interface TokenResult {
   expected_service_time: string | null;
 }
 
+type StatusColor = 'success' | 'warning' | 'info' | 'error' | 'default';
+
 // ─── Status chip color map ────────────────────────────────────────────────────
-const statusColor = (s: string): 'success' | 'warning' | 'info' | 'error' | 'default' => {
+const statusColor = (s: string): StatusColor => {
   if (s === 'CALLED') return 'success';
   if (s === 'IN_PROGRESS') return 'info';
   if (s === 'WAITING' || s === 'ARRIVED') return 'warning';
@@ -32,8 +34,14 @@ const statusColor = (s: string): 'success' | 'warning' | 'info' | 'error' | 'def
   return 'default';
 };
 
+interface StatPillProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}
+
 // ─── Stat pill ────────────────────────────────────────────────────────────────
-const StatPill: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({ icon, label, value }) => (
+const StatPill: React.FC<StatPillProps> = ({ icon, label, value }): React.ReactElement => (
   <Paper elevation={0} sx={{ 
     display: 'flex', alignItems: 'center', gap: 2, p: 3, 
     borderRadius: 3, border: '1px solid #e2e8f0', bgcolor: '#ffffff',
@@ -50,38 +58,38 @@ const StatPill: React.FC<{ icon: React.ReactNode; label: string; value: string }
 );
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export const LandingPage: React.FC = () => {
+export const LandingPage: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
-  const [tokenInput, setTokenInput] = useState('');
+  const [tokenInput, setTokenInput] = useState<string>('');
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('jwt_token');
-  const userRole = localStorage.getItem('user_role');
-  const isLoggedIn = !!token;
-  const dashboardLink = userRole === 'ADMIN' ? '/admin' : userRole === 'OFFICER' ? '/staff' : '/citizen/dashboard';
+  const token: string | null = localStorage.getItem('jwt_token');
+  const userRole: string | null = localStorage.getItem('user_role');
+  const isLoggedIn: boolean = !!token;
+  const dashboardLink: string = userRole === 'ADMIN' ? '/admin' : userRole === 'OFFICER' ? '/staff' : '/citizen/dashboard';
 
   // Forgot token dialog
-  const [forgotOpen, setForgotOpen] = useState(false);
-  const [phone, setPhone] = useState('');
+  const [forgotOpen, setForgotOpen] = useState<boolean>(false);
+  const [phone, setPhone] = useState<string>('');
   const [lookupResults, setLookupResults] = useState<TokenResult[] | null>(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [lookupError, setLookupError] = useState('');
+  const [lookupLoading, setLookupLoading] = useState<boolean>(false);
+  const [lookupError, setLookupError] = useState<string>('');
 
-  const handleTrack = (e: React.FormEvent) => {
+  const handleTrack = (e: React.FormEvent<HTMLFormElement | HTMLDivElement>): void => {
     e.preventDefault();
     if (tokenInput.trim()) {
       navigate(`/track/${tokenInput.trim().toUpperCase()}`);
     }
   };
 
-  const handlePhoneLookup = async (e: React.FormEvent) => {
+  const handlePhoneLookup = async (e: React.FormEvent<HTMLFormElement | HTMLDivElement>): Promise<void> => {
     e.preventDefault();
     if (!phone.trim()) return;
     setLookupLoading(true);
     setLookupError('');
     setLookupResults(null);
     try {
-      const { data } = await api.get(`/api/queue/lookup-by-phone?phone=${encodeURIComponent(phone.trim())}`);
+      const { data } = await api.get<{data: TokenResult[]}>(`/api/queue/lookup-by-phone?phone=${encodeURIComponent(phone.trim())}`);
       setLookupResults(data.data ?? []);
     } catch {
       setLookupError('Could not fetch tokens. Please check the phone number and try again.');

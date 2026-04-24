@@ -6,29 +6,37 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '../../../common/components/LanguageToggle';
 
-export const Login: React.FC = () => {
+import { AxiosError } from 'axios';
+
+interface LoginResponse {
+  role: 'ADMIN' | 'CITIZEN' | 'STAFF' | 'OFFICER';
+  [key: string]: unknown;
+}
+
+export const Login: React.FC = (): React.ReactElement => {
   const { t } = useTranslation();
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [phone, setPhone] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const { mutate: staffLogin, isPending } = useLoginMutation();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     setErrorMsg('');
     staffLogin(
       { phone: phone.trim(), password: password.trim() },
       {
-        onSuccess: (data: any) => {
+        onSuccess: (data: LoginResponse): void => {
           if (data.role === 'ADMIN') navigate('/admin');
           else if (data.role === 'CITIZEN') navigate('/citizen/dashboard');
           else navigate('/staff');
         },
-        onError: (error: any) => {
-          setErrorMsg(error.response?.data?.message || t('loginFailed'));
+        onError: (error: Error | AxiosError): void => {
+          const axiosError = error as AxiosError<{message: string}>;
+          setErrorMsg(axiosError.response?.data?.message || t('loginFailed'));
         },
       }
     );

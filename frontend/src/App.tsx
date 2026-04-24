@@ -16,7 +16,7 @@ import { logout } from './modules/auth/hooks/useAuth';
 import { useQueryClient } from '@tanstack/react-query';
 import { syncOfflineMutations } from './common/utils/offlineSync';
 
-const Unauthorized = () => (
+const Unauthorized: React.FC = (): React.ReactElement => (
   <Box sx={{ p: 4, textAlign: 'center' }}>
     <Typography variant="h4" color="error" gutterBottom>403 - Unauthorized</Typography>
     <Typography variant="body1" sx={{ mb: 3 }}>You do not have permission to view this page.</Typography>
@@ -24,9 +24,7 @@ const Unauthorized = () => (
   </Box>
 );
 
-
-
-export const App: React.FC = () => {
+export const App: React.FC = (): React.ReactElement => {
   const queryClient = useQueryClient();
 
   React.useEffect(() => {
