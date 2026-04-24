@@ -38,3 +38,6 @@ logs/
 *.log
 *.sqlite3
 
+# Local IDE Hygiene
+.markdownlint.json
+
