@@ -4,9 +4,8 @@ from src.modules.queue.queue_service import QueueService
 from src.modules.queue.queue_schema import (
     AdvanceTokenRequest, WalkInRequest, TransferRequest,
     CheckInRequest, DelayReportRequest, FeedbackRequest,
-    serialize_token
+    WebBookingRequest, RescheduleRequest, serialize_token
 )
-
 
 class QueueController:
     @staticmethod
@@ -81,6 +80,49 @@ class QueueController:
             token = await QueueService.register_walk_in(req.phone, req.name, req.service_id, req.branch_id)
             return {
                 "status": "success",
+                "data": serialize_token(token)
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    # Handles web-based bookings
+    @staticmethod
+    async def register_web_booking(req: WebBookingRequest):
+        try:
+            token = await QueueService.register_web_booking(req.phone, req.name, req.service_id, req.branch_id, req.scheduled_time)
+            return {
+                "status": "success",
+                "data": serialize_token(token)
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    # Handles citizen reschedule requests
+    @staticmethod
+    async def reschedule_token(token_id: str, req: RescheduleRequest):
+        try:
+            token = await QueueService.reschedule_token(token_id, req.new_time)
+            return {
+                "status": "success",
+                "message": "Appointment rescheduled successfully.",
+                "data": serialize_token(token)
+            }
+        except Exception as e:
+            if isinstance(e, QueueOSException):
+                raise e
+            raise QueueOSException(500, str(e))
+
+    @staticmethod
+    async def cancel_token(token_id: str):
+        try:
+            token = await QueueService.cancel_token(token_id)
+            return {
+                "status": "success",
+                "message": "Appointment cancelled.",
                 "data": serialize_token(token)
             }
         except Exception as e:

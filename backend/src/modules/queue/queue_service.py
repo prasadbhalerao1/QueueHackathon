@@ -299,6 +299,52 @@ class QueueService:
         await new_token.save()
         return new_token
 
+    # -- EXTENDED WEB-PORTAL FEATURES --
+    
+    @staticmethod
+    async def register_web_booking(phone: str, name: str, service_id: str, branch_id: str, scheduled_time: datetime) -> Token:
+        token = await QueueService.register_walk_in(phone, name, service_id, branch_id)
+        token.expected_service_time = scheduled_time
+        token.status = QueueStatus.BOOKED
+        token.booking_type = BookingType.WEB if hasattr(BookingType, "WEB") else BookingType.WALK_IN
+        await token.save()
+        return token
+
+    # Reschedule appointment enforcing the 30-minute lock rule
+    @staticmethod
+    async def reschedule_token(token_id: str, new_time: datetime) -> Token:
+        token = await Token.get(PydanticObjectId(token_id))
+        if not token: raise QueueOSException(404, "Token not found")
+        await QueueService._manual_fetch_links(token)
+        
+        if token.status not in [QueueStatus.BOOKED, QueueStatus.WAITING, QueueStatus.ARRIVED]:
+            raise QueueOSException(400, "Token is not in a reschedulable state.")
+            
+        now = datetime.utcnow()
+        if token.expected_service_time:
+            # Enforce 30-minute lock
+            if (token.expected_service_time.replace(tzinfo=None) - now).total_seconds() < 1800:
+                raise QueueOSException(400, "Time-Locked: Cannot reschedule within 30 minutes of the expected time.")
+
+        token.expected_service_time = new_time.replace(tzinfo=None)
+        token.status = QueueStatus.BOOKED
+        await token.save()
+        return token
+
+    # Citizen cancellation action
+    @staticmethod
+    async def cancel_token(token_id: str) -> Token:
+        token = await Token.get(PydanticObjectId(token_id))
+        if not token: raise QueueOSException(404, "Token not found")
+        await QueueService._manual_fetch_links(token)
+        
+        if token.status in [QueueStatus.COMPLETED, QueueStatus.CANCELLED, QueueStatus.NO_SHOW]:
+            raise QueueOSException(400, "Token cannot be cancelled.")
+            
+        token.status = QueueStatus.CANCELLED
+        await token.save()
+        return token
+
     @staticmethod
     async def transfer_branch(token_id: str, target_branch_id: str) -> Token:
         token = await Token.get(PydanticObjectId(token_id))

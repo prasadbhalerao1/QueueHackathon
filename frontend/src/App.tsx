@@ -1,9 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './modules/auth/pages/Login';
+import { Register } from './modules/auth/pages/Register';
 import { StaffDashboard } from './modules/queue/components/StaffDashboard';
 import { AdminDashboard } from './modules/admin/components/AdminDashboard';
 import { CitizenTracker } from './modules/queue/pages/CitizenTracker';
+import { CitizenPortal } from './modules/queue/pages/CitizenPortal';
+import { CitizenDashboard } from './modules/queue/pages/CitizenDashboard';
 
 import { ProtectedRoute } from './common/components/ProtectedRoute';
 import { MainLayout } from './common/layouts/MainLayout';
@@ -40,11 +43,18 @@ export const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/track/:tokenNumber" element={<CitizenTracker />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         
         {/* /track without token redirects home */}
         <Route path="/track" element={<Navigate to="/" replace />} />
+
+        {/* Protected Routes for Citizens */}
+        <Route element={<ProtectedRoute allowedRoles={['CITIZEN', 'OFFICER', 'ADMIN']} />}>
+          <Route path="/portal" element={<CitizenPortal />} />
+          <Route path="/citizen/dashboard" element={<CitizenDashboard />} />
+        </Route>
         
         {/* Protected Routes for Staff */}
         <Route element={<ProtectedRoute allowedRoles={['OFFICER', 'ADMIN']} />}>

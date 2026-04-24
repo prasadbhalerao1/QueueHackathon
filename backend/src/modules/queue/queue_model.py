@@ -10,6 +10,7 @@ class Branch(Document):
     lat: float = 0.0
     lng: float = 0.0
     active_desks: int = 1
+    total_desks: int = 1
     rush_mode: bool = False
 
     class Settings:

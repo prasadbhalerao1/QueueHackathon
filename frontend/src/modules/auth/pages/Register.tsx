@@ -1,34 +1,43 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, CircularProgress, Alert, Divider, InputAdornment, IconButton } from '@mui/material';
-import { LockOutlined, BadgeOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
-import { useLoginMutation } from '../hooks/useAuth';
+import { Box, Card, CardContent, Typography, TextField, Button, CircularProgress, Alert, InputAdornment, IconButton, Snackbar } from '@mui/material';
+import { AppRegistrationOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { useRegisterMutation } from '../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageToggle } from '../../../common/components/LanguageToggle';
 
-export const Login: React.FC = () => {
+export const Register: React.FC = () => {
   const { t } = useTranslation();
+  const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [successToast, setSuccessToast] = useState(false);
 
-  const { mutate: staffLogin, isPending } = useLoginMutation();
+  const { mutate: register, isPending } = useRegisterMutation();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    staffLogin(
-      { phone: phone.trim(), password: password.trim() },
+    
+    if (!name.trim() || !phone.trim() || !password.trim()) {
+      setErrorMsg(t('allFieldsRequired'));
+      return;
+    }
+
+    register(
+      { name: name.trim(), phone: phone.trim(), password: password.trim() },
       {
-        onSuccess: (data: any) => {
-          if (data.role === 'ADMIN') navigate('/admin');
-          else if (data.role === 'CITIZEN') navigate('/citizen/dashboard');
-          else navigate('/staff');
+        onSuccess: () => {
+          setSuccessToast(true);
+          setTimeout(() => {
+            navigate('/citizen/dashboard');
+          }, 1500);
         },
         onError: (error: any) => {
-          setErrorMsg(error.response?.data?.message || t('loginFailed'));
+          setErrorMsg(error.response?.data?.message || t('registrationFailed'));
         },
       }
     );
@@ -62,13 +71,13 @@ export const Login: React.FC = () => {
         }}
       >
         {/* Header Band */}
-        <Box sx={{ bgcolor: 'primary.main', py: 3, px: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
-          <LockOutlined sx={{ color: 'white', fontSize: 36, mb: 1 }} />
+        <Box sx={{ bgcolor: '#4338ca', py: 3, px: { xs: 2.5, sm: 4 }, textAlign: 'center' }}>
+          <AppRegistrationOutlined sx={{ color: 'white', fontSize: 36, mb: 1 }} />
           <Typography variant="h5" sx={{ color: 'white', fontWeight: 800, fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
-            {t('secureAccess')}
+            {t('citizenSetup')}
           </Typography>
           <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-            {t('loginSubtitle')}
+            {t('registerSubtitle')}
           </Typography>
         </Box>
 
@@ -81,7 +90,21 @@ export const Login: React.FC = () => {
 
           <form onSubmit={handleSubmit} noValidate>
             <TextField
-              id="login-phone"
+              id="register-name"
+              label={t('fullName')}
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+              placeholder="e.g. Rahul Sharma"
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              id="register-phone"
               label={t('phoneNumber')}
               variant="outlined"
               fullWidth
@@ -89,13 +112,13 @@ export const Login: React.FC = () => {
               value={phone}
               onChange={(e) => setPhone(e.target.value.trim())}
               required
-              autoFocus
               placeholder="e.g. 9999999999"
               slotProps={{ htmlInput: { 'aria-label': 'Phone Number', minLength: 10, maxLength: 13 } }}
               sx={{ mb: 2 }}
             />
+            
             <TextField
-              id="login-password"
+              id="register-password"
               label={t('password')}
               type={showPassword ? 'text' : 'password'}
               variant="outlined"
@@ -109,14 +132,18 @@ export const Login: React.FC = () => {
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" aria-label="toggle password visibility">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
                         {showPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </InputAdornment>
-                  )
+                  ),
                 }
               }}
-              sx={{ mb: 3 }}
+              sx={{ mb: 4 }}
             />
 
             <Button
@@ -134,43 +161,33 @@ export const Login: React.FC = () => {
                 '&:hover': {
                   boxShadow: '0 6px 20px rgba(0,118,255,0.23)',
                 },
+                bgcolor: '#4338ca'
               }}
             >
-              {isPending ? <CircularProgress size={24} color="inherit" /> : t('secureLogin')}
+              {isPending ? <CircularProgress size={24} color="inherit" /> : t('register')}
             </Button>
           </form>
 
           <Box sx={{ mt: 4, textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
-              {t('noAccount')}{' '}
-              <Link to="/register" style={{ color: '#1976d2', textDecoration: 'none', fontWeight: 700 }}>
-                {t('registerHere')}
+              {t('alreadyHaveAccount')}{' '}
+              <Link to="/login" style={{ color: '#4338ca', textDecoration: 'none', fontWeight: 700 }}>
+                {t('loginHere')}
               </Link>
             </Typography>
           </Box>
-
-          <Divider sx={{ my: 3 }} />
-
-          {/* Citizen Helper */}
-          <Box sx={{ textAlign: 'center' }}>
-            <BadgeOutlined sx={{ color: 'text.secondary', mb: 0.5 }} />
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {t('citizenHelper')}
-            </Typography>
-            <Button
-              component={Link}
-              to="/"
-              variant="outlined"
-              color="primary"
-              size="small"
-              fullWidth
-              sx={{ borderRadius: 2 }}
-            >
-              {t('trackMyToken')}
-            </Button>
-          </Box>
         </CardContent>
       </Card>
+      
+      <Snackbar 
+        open={successToast} 
+        autoHideDuration={1500} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" variant="filled" sx={{ width: '100%', borderRadius: 2, fontWeight: 700 }}>
+          {t('registrationSuccess')}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

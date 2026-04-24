@@ -33,10 +33,14 @@ register_exception_handlers(app)
 from src.modules.queue.queue_routes import queue_router
 from src.modules.whatsapp.whatsapp_routes import whatsapp_router
 from src.modules.auth.auth_routes import auth_router
+from src.modules.users.users_routes import users_router
+from src.modules.ai.ai_routes import ai_router
 
 app.include_router(queue_router, prefix="/api/queue", tags=["Queue"])
 app.include_router(whatsapp_router, prefix="/api/whatsapp", tags=["WhatsApp"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
+app.include_router(users_router, prefix="/api/users", tags=["Users"])
+app.include_router(ai_router, prefix="/api", tags=["AI"])
 
 @app.get("/")
 async def root():
@@ -53,6 +57,11 @@ import platform
 import sys
 
 START_TIME = time.time()
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    from fastapi import Response
+    return Response(status_code=204)
 
 @app.get("/health")
 async def health_check():

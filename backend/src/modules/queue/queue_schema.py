@@ -91,6 +91,17 @@ class WalkInRequest(BaseModel):
     branch_id: Optional[str] = None
 
 
+class WebBookingRequest(BaseModel):
+    name: str
+    phone: str
+    service_id: str
+    branch_id: str
+    scheduled_time: datetime
+
+class RescheduleRequest(BaseModel):
+    new_time: datetime
+
+
 class TransferRequest(BaseModel):
     target_branch_id: str
 

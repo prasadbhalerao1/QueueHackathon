@@ -1,168 +1,123 @@
-# QueueOS - Smart Queue Infrastructure for Public Services
+# QueueOS — Smart Queue Infrastructure for Public Services
 
-A full-stack application for managing queues in public service centers with WhatsApp integration, AI-powered assistance, and real-time tracking.
+A full-stack, multilingual (English / मराठी) queue management platform for Indian public service centers with WhatsApp integration, AI-powered document assistance, ML-based crowd prediction, and real-time citizen tracking.
 
-**[📖 Full Deployment Guide →](./DEPLOYMENT.md)**
+**[📖 Full Deployment Guide →](./docs/DEPLOYMENT.md)** · **[🧪 Testing Guide →](./docs/TESTING.md)** · **[📊 Architecture Diagrams →](./docs/Diagrams.md)**
+
+---
+
+## 🔑 Demo Credentials
+
+| Role | Phone | Password | Access |
+|------|-------|----------|--------|
+| **Super Admin** | `9999999999` | `password` | Analytics, capacity, rush protocol, VIP override |
+| **Staff Officer** | `8888888888` | `password` | Call next, advance tokens, walk-ins, transfers |
+| **Test Citizen** | `7777777777` | `password` | Dashboard, bookings, live tracking |
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 16+
+- Python 3.10+
+- Node.js 18+
 - MongoDB Atlas account
 - Twilio account (for WhatsApp)
 - Google Gemini API key
 
-### 1. Clone & Setup Backend
+### 1. Backend Setup
 
-```bash
-git clone <repo-url>
-cd Hackathon/backend
+```powershell
+cd QueueHackathon\backend
 
-# Create virtual environment
+# Create & activate virtual environment
 python -m venv .venv
-source .venv/bin/activate  # Windows: .\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 
 # Install dependencies
 pip install -r requirements.txt
 
 # Setup environment
-cp .env.example .env
-# Edit .env with your credentials (see DEPLOYMENT.md)
+Copy-Item .env.example .env
+# Edit .env with your credentials (see docs/DEPLOYMENT.md)
 
-# Run backend
+# Run backend (auto-seeds demo data on first run)
 python -m uvicorn src.main:app --reload --port 8000
 ```
 
-**Backend runs at:** http://localhost:8000
+**Backend:** http://localhost:8000 · **API Docs:** http://localhost:8000/docs
 
-### 2. Setup Frontend
+### 2. Frontend Setup
 
-```bash
-cd Hackathon/frontend
+```powershell
+cd QueueHackathon\frontend
 
 # Install dependencies
 npm install
 
 # Setup environment
-cp .env.example .env
+Copy-Item .env.example .env
 # Set VITE_API_BASE_URL=http://localhost:8000
 
 # Run frontend
 npm run dev
 ```
 
-**Frontend runs at:** http://localhost:5173
+**Frontend:** http://localhost:5173
 
 ---
 
-## Build & Deployment Commands
+## Features
 
-### Frontend
-```bash
-# Development
-npm run dev
-
-# Production build
-npm run build
-
-# Preview build
-npm run preview
-```
-
-### Backend
-```bash
-# Development (with auto-reload)
-python -m uvicorn src.main:app --reload --port 8000
-
-# Production
-python -m uvicorn src.main:app --port 8000
-```
-
-### Deploy to Vercel
-
-**Backend:**
-```bash
-cd backend
-vercel --name queueos-api
-# Add environment variables in Vercel dashboard
-```
-
-**Frontend:**
-```bash
-cd frontend
-vercel --name queueos-web
-# Add VITE_API_BASE_URL in Vercel dashboard
-```
+| Feature | Description |
+|---------|-------------|
+| ✅ **Multilingual UI** | Full English ↔ मराठी (Devanagari) toggle on every page via `react-i18next` |
+| ✅ **WhatsApp Booking** | Conversational slot booking via Twilio + Gemini AI intent parsing |
+| ✅ **Live Token Tracking** | Real-time "People Ahead" + ETA on a mobile-first PWA tracker |
+| ✅ **AI Document Assistant** | Gemini-powered chat widget for govt document guidance |
+| ✅ **ML Crowd Prediction** | Scikit-learn model predicts branch crowd levels + best visit times |
+| ✅ **Staff Dashboard** | One-click Call → Start → Complete flow, undo window, desk management |
+| ✅ **Admin Overdrive** | Rush Protocol, VIP Override, Emergency Reset, capacity control |
+| ✅ **Smart Delay** | "Running Late" button that holds citizen's spot without cancellation |
+| ✅ **Grace Re-entry** | Staff can re-admit no-show citizens with a 1-person penalty |
+| ✅ **Branch Transfer** | Move tokens across branches with 1 click |
+| ✅ **Web Booking Portal** | 4-step wizard with AI crowd insights and required docs display |
+| ✅ **Feedback System** | 5-star rating after service completion |
+| ✅ **Offline Support** | TanStack Query mutations cached locally during network drops |
+| ✅ **Mobile Responsive** | All citizen-facing pages optimized for mobile viewports |
 
 ---
 
-## Environment Variables
+## Technology Stack
 
-### Backend (.env)
-```env
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/db
-GEMINI_API_KEY=your_api_key
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_WHATSAPP_NUMBER=+1234567890
-SECRET_KEY=your_secret_key
-FRONTEND_URL=http://localhost:5173
-ENVIRONMENT=development
-```
-
-### Frontend (.env)
-```env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-**[→ Full environment guide](./DEPLOYMENT.md#environment-variables)**
-
----
-
-## CORS Configuration
-
-**No CORS Errors!** ✅
-
-The backend is pre-configured to:
-- Allow localhost for development
-- Allow your Vercel frontend in production
-- Support Vercel preview deployments
-- Auto-configure based on ENVIRONMENT variable
-
-[Learn more about CORS setup →](./DEPLOYMENT.md#cors-configuration)
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 19, TypeScript, Vite, Material UI v6, TanStack Query, react-i18next |
+| **Backend** | FastAPI (Python), Beanie ODM, Pydantic v2 |
+| **Database** | MongoDB Atlas |
+| **AI / NLP** | Google Gemini 2.5 Flash (WhatsApp intent + document chat) |
+| **ML** | Scikit-learn (crowd prediction model) |
+| **Messaging** | Twilio (WhatsApp Business API) |
+| **Auth** | JWT (PyJWT) + bcrypt |
+| **Deployment** | Vercel (Frontend + Serverless Backend) |
 
 ---
 
 ## Project Structure
 
 ```
-Hackathon/
-├── backend/              # FastAPI application
-│   ├── src/
-│   │   ├── main.py      # FastAPI app with CORS
-│   │   └── modules/
-│   │       ├── auth/    # Authentication
-│   │       ├── queue/   # Queue management
-│   │       ├── users/   # User management
-│   │       └── whatsapp/# WhatsApp integration
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── vercel.json
-├── frontend/            # React + Vite application
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── auth/
-│   │   │   ├── queue/
-│   │   │   └── admin/
-│   │   └── common/
-│   ├── package.json
-│   ├── .env.example
-│   ├── vite.config.ts
-│   └── vercel.json
-└── DEPLOYMENT.md        # Complete deployment guide
+QueueHackathon/
+├── backend/                    # FastAPI application
+├── frontend/                   # React + Vite application
+├── docs/                       # Comprehensive Documentation
+│   ├── DEPLOYMENT.md           # Full deployment guide
+│   ├── Diagrams.md             # Architecture & flow diagrams
+│   ├── Project_Documentation.md # Product strategy & feature spec
+│   ├── SRS.md                  # Software Requirements Specification
+│   ├── TESTING.md              # Testing guide
+│   └── WHATSAPP_TESTING_RUNBOOK.md
+├── README.md                   # ← You are here
+└── vercel.json
 ```
 
 ---
@@ -170,10 +125,8 @@ Hackathon/
 ## API Documentation
 
 Once backend is running:
-
 - **Swagger UI:** http://localhost:8000/docs
 - **ReDoc:** http://localhost:8000/redoc
-- **API Root:** http://localhost:8000
 
 ---
 
@@ -181,52 +134,13 @@ Once backend is running:
 
 | Issue | Solution |
 |-------|----------|
-| CORS errors | See [CORS troubleshooting](./DEPLOYMENT.md#cors-errors) |
-| Missing env vars | Copy `.env.example` to `.env` and fill in values |
-| Backend won't start | Check Python version (3.9+) and requirements installed |
-| Frontend can't reach API | Verify `VITE_API_BASE_URL` in `.env` |
+| CORS errors | Check `FRONTEND_URL` in backend `.env`. See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md#cors-configuration) |
+| Backend won't start | Check Python 3.10+ and `pip install -r requirements.txt` |
+| Frontend can't reach API | Verify `VITE_API_BASE_URL` in frontend `.env` |
+| Empty dashboard | Hit seed endpoint or restart backend (auto-seeds on startup) |
+| Marathi text not showing | Ensure `react-i18next` is imported in the component |
 
-**[→ Full troubleshooting guide](./DEPLOYMENT.md#troubleshooting)**
-
----
-
-## Features
-
-- ✅ **Queue Management** - Real-time queue tracking and management
-- ✅ **WhatsApp Integration** - Send updates via WhatsApp
-- ✅ **AI Assistance** - Google Gemini-powered help system
-- ✅ **User Authentication** - JWT-based secure authentication
-- ✅ **Multi-role Support** - Citizens, Staff, Admins
-- ✅ **Offline Support** - Progressive Web App features
-- ✅ **CORS Ready** - Pre-configured for Vercel deployment
-
----
-
-## Technology Stack
-
-**Backend:**
-- FastAPI (Python web framework)
-- MongoDB (NoSQL database)
-- Beanie (MongoDB ORM)
-- Twilio (WhatsApp API)
-- Google Gemini (AI/LLM)
-
-**Frontend:**
-- React 19 (UI library)
-- TypeScript (type safety)
-- Vite (build tool)
-- React Router (navigation)
-- Material-UI (components)
-- Axios (HTTP client)
-
----
-
-## Getting Help
-
-1. **Local Issues?** → Check [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting)
-2. **API Questions?** → Visit http://localhost:8000/docs
-3. **Deployment Help?** → See [Deployment Guide](./DEPLOYMENT.md)
-4. **Documentation** → Check individual README files in `backend/` and `frontend/`
+**[→ Full troubleshooting guide](./docs/DEPLOYMENT.md#troubleshooting)**
 
 ---
 
@@ -236,4 +150,4 @@ ISC
 
 ---
 
-**Ready to deploy? Start with the [Full Deployment Guide →](./DEPLOYMENT.md)**
+**Ready to deploy? Start with the [Full Deployment Guide →](./docs/DEPLOYMENT.md)**

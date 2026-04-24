@@ -5,8 +5,11 @@ import { Box, Card, Typography, CircularProgress, Alert, Button, Dialog, DialogT
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../../../common/api';
 import { QueueStatus } from '../types';
+import { useTranslation } from 'react-i18next';
+import { LanguageToggle } from '../../../common/components/LanguageToggle';
 
 export const CitizenTracker: React.FC = () => {
+  const { t } = useTranslation();
   const { tokenNumber } = useParams<{ tokenNumber: string }>();
   const queryClient = useQueryClient();
 
@@ -18,16 +21,13 @@ export const CitizenTracker: React.FC = () => {
       const response = await api.get(`/api/queue/track/${tokenNumber}`);
       return response.data.data;
     },
-    // Only run if we have a token number
     enabled: Boolean(tokenNumber),
-    // Stop polling once the token hits a terminal state — no point hammering the DB
     refetchInterval: (query) => {
       const status = query.state.data?.token?.status;
       if (status === undefined) return 3000;
       if (TERMINAL_STATUSES.includes(status)) return false;
       return 3000;
     },
-    // Don't retry aggressively on failure
     retry: 1,
   });
 
@@ -49,7 +49,7 @@ export const CitizenTracker: React.FC = () => {
     }
   });
 
-  const { mutate: reportDelay, isPending: delayPending } = useMutation({
+  const { mutate: reportDelayMut, isPending: delayPending } = useMutation({
     mutationFn: async () => {
       if (!data?.token?.id) throw new Error("No token ID");
       await api.post(`/api/queue/delay/${data.token.id}`, { delay_minutes: delayMinutes });
@@ -65,7 +65,7 @@ export const CitizenTracker: React.FC = () => {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f8fafc' }}>
         <CircularProgress size={60} color="primary" thickness={4} />
-        <Typography variant="h6" sx={{ mt: 3, fontWeight: 'bold', color: 'text.secondary' }}>Loading Live Status...</Typography>
+        <Typography variant="h6" sx={{ mt: 3, fontWeight: 'bold', color: 'text.secondary' }}>{t('loadingLiveStatus')}</Typography>
       </Box>
     );
   }
@@ -74,7 +74,7 @@ export const CitizenTracker: React.FC = () => {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#f8fafc', p: 2 }}>
         <Alert severity="error" sx={{ width: '100%', maxWidth: 400, fontWeight: 'bold', borderRadius: 3 }}>
-          Invalid Token or Token Not Found.
+          {t('invalidToken')}
         </Alert>
       </Box>
     );
@@ -85,10 +85,8 @@ export const CitizenTracker: React.FC = () => {
   const isCompleted = token.status === QueueStatus.COMPLETED;
   const isWaitingOrArrived = [QueueStatus.WAITING, QueueStatus.ARRIVED, QueueStatus.BOOKED].includes(token.status);
 
-  // Dynamic Progress Logic
-  const initialEstimate = estimated_wait_minutes > 0 ? estimated_wait_minutes + (people_ahead * 10) : 60; // fallback scale
+  const initialEstimate = estimated_wait_minutes > 0 ? estimated_wait_minutes + (people_ahead * 10) : 60;
   const progressPercent = isCalled || isCompleted ? 100 : Math.max(5, 100 - ((people_ahead * 10 / initialEstimate) * 100));
-  const displayTime = token.expected_service_time ? new Date(token.expected_service_time + (token.expected_service_time.endsWith('Z') ? '' : 'Z')) : null;
 
   return (
     <Box sx={{ 
@@ -100,15 +98,18 @@ export const CitizenTracker: React.FC = () => {
       transition: 'background-color 0.5s ease',
       pb: 4
     }}>
-      {/* Top Banner */}
-      <Box sx={{ bgcolor: isCalled ? 'rgba(0,0,0,0.2)' : '#ffffff', p: 2, boxShadow: isCalled ? 'none' : '0 2px 10px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-        <Typography variant="h6" fontWeight="900" sx={{ opacity: 0.9 }}>QueueOS Track</Typography>
-        {token.branch?.name && (
-          <Typography variant="body2" sx={{ opacity: 0.8 }}>{token.branch.name}</Typography>
-        )}
+      {/* Top Banner with Language Toggle */}
+      <Box sx={{ bgcolor: isCalled ? 'rgba(0,0,0,0.2)' : '#ffffff', p: 2, boxShadow: isCalled ? 'none' : '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ textAlign: 'center', flex: 1 }}>
+          <Typography variant="h6" fontWeight="900" sx={{ opacity: 0.9, fontSize: { xs: '1rem', sm: '1.25rem' } }}>{t('queueosTrack')}</Typography>
+          {token.branch?.name && (
+            <Typography variant="body2" sx={{ opacity: 0.8, fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{token.branch.name}</Typography>
+          )}
+        </Box>
+        <LanguageToggle />
       </Box>
 
-      <Container maxWidth="sm" sx={{ mt: { xs: 4, md: 8 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Container maxWidth="sm" sx={{ mt: { xs: 3, md: 8 }, flex: 1, display: 'flex', flexDirection: 'column', px: { xs: 2, sm: 3 } }}>
         
         {/* Token Card */}
         <Card elevation={isCalled ? 0 : 4} sx={{ 
@@ -123,13 +124,13 @@ export const CitizenTracker: React.FC = () => {
             <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, height: '8px', bgcolor: '#10b981' }} />
           )}
           
-          <Box sx={{ p: 4, textAlign: 'center' }}>
-            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" gutterBottom>
-              YOUR TOKEN NUMBER
+          <Box sx={{ p: { xs: 3, sm: 4 }, textAlign: 'center' }}>
+            <Typography variant="subtitle1" fontWeight="bold" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.8rem', sm: '1rem' } }}>
+              {t('yourTokenNumber')}
             </Typography>
             
             <Typography variant="h1" fontWeight="900" sx={{ 
-              fontSize: { xs: '4rem', md: '5rem' }, 
+              fontSize: { xs: '3rem', sm: '4rem', md: '5rem' }, 
               lineHeight: 1, 
               mb: 2, 
               color: isCalled ? '#10b981' : 'primary.main' 
@@ -141,35 +142,35 @@ export const CitizenTracker: React.FC = () => {
               label={token.status.replace('_', ' ')} 
               color={isCalled ? "success" : "primary"} 
               variant={isCalled ? "filled" : "outlined"}
-              sx={{ fontWeight: 'bold', fontSize: '1rem', px: 2, py: 2.5, borderRadius: 2 }}
+              sx={{ fontWeight: 'bold', fontSize: { xs: '0.8rem', sm: '1rem' }, px: 2, py: 2.5, borderRadius: 2 }}
             />
           </Box>
 
           {isCalled ? (
-            <Box sx={{ p: 4, bgcolor: '#ecfdf5', borderTop: '1px solid #d1fae5', textAlign: 'center' }}>
-               <Typography variant="h4" className="blink-text" sx={{ fontWeight: '900', color: '#047857' }}>
-                IT'S YOUR TURN!
+            <Box sx={{ p: { xs: 3, sm: 4 }, bgcolor: '#ecfdf5', borderTop: '1px solid #d1fae5', textAlign: 'center' }}>
+               <Typography variant="h4" className="blink-text" sx={{ fontWeight: '900', color: '#047857', fontSize: { xs: '1.5rem', sm: '2.125rem' } }}>
+                 {t('itsYourTurn')}
                </Typography>
-               <Typography variant="h6" sx={{ mt: 1, color: '#065f46' }}>
-                Please proceed to Desk {token.desk_number || 'immediately'}
+               <Typography variant="h6" sx={{ mt: 1, color: '#065f46', fontSize: { xs: '0.9rem', sm: '1.25rem' } }}>
+                 {t('proceedToDesk', { desk: token.desk_number || 'immediately' })}
                </Typography>
             </Box>
           ) : (
-            <Box sx={{ p: 3, borderTop: '1px solid #e2e8f0', bgcolor: '#f1f5f9' }}>
+            <Box sx={{ p: { xs: 2, sm: 3 }, borderTop: '1px solid #e2e8f0', bgcolor: '#f1f5f9' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" fontWeight="bold">Queue Progress</Typography>
-                <Typography variant="body2" color="primary.main" fontWeight="bold">{people_ahead} Ahead</Typography>
+                <Typography variant="body2" color="text.secondary" fontWeight="bold">{t('queueProgress')}</Typography>
+                <Typography variant="body2" color="primary.main" fontWeight="bold">{people_ahead} {t('ahead')}</Typography>
               </Box>
               <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 10, borderRadius: 5 }} />
               
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 3 }}>
                 <Box sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 3, textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Est. Wait</Typography>
-                  <Typography variant="h5" fontWeight="900" color="info.main">{estimated_wait_minutes}m</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">{t('estWaitShort')}</Typography>
+                  <Typography variant="h5" fontWeight="900" color="info.main" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>{estimated_wait_minutes}m</Typography>
                 </Box>
                 <Box sx={{ p: 2, bgcolor: '#ffffff', borderRadius: 3, textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">Serving</Typography>
-                  <Typography variant="h5" fontWeight="900">{current_serving || '--'}</Typography>
+                  <Typography variant="caption" color="text.secondary" display="block" fontWeight="bold">{t('serving')}</Typography>
+                  <Typography variant="h5" fontWeight="900" sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>{current_serving || '--'}</Typography>
                 </Box>
               </Box>
             </Box>
@@ -185,9 +186,9 @@ export const CitizenTracker: React.FC = () => {
               size="large"
               fullWidth 
               onClick={() => setDelayOpen(true)}
-              sx={{ fontWeight: 'bold', py: 2, fontSize: '1.1rem', borderRadius: 3 }}
+              sx={{ fontWeight: 'bold', py: 2, fontSize: { xs: '0.95rem', sm: '1.1rem' }, borderRadius: 3 }}
             >
-              Running Late? (Hold Spot)
+              {t('runningLate')}
             </Button>
           )}
 
@@ -198,51 +199,62 @@ export const CitizenTracker: React.FC = () => {
               size="large"
               fullWidth 
               onClick={() => setFeedbackOpen(true)}
-              sx={{ fontWeight: 'bold', py: 2, fontSize: '1.1rem', borderRadius: 3 }}
+              sx={{ fontWeight: 'bold', py: 2, fontSize: { xs: '0.95rem', sm: '1.1rem' }, borderRadius: 3 }}
             >
-              Rate Your Experience
+              {t('rateExperience')}
             </Button>
           )}
           
           {isCompleted && token.rating && (
-            <Alert severity="success" variant="filled" sx={{ borderRadius: 3, justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1rem' }}>
-              You rated your experience {token.rating} Stars. Thanks!
+            <Alert severity="success" variant="filled" sx={{ borderRadius: 3, justifyContent: 'center', fontWeight: 'bold', fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
+              {t('ratedExperience', { rating: token.rating })}
             </Alert>
           )}
+
+          <Button 
+            variant="outlined" 
+            color="inherit" 
+            size="large"
+            fullWidth 
+            onClick={() => window.location.href = '/citizen/dashboard'}
+            sx={{ fontWeight: 'bold', py: 2, fontSize: { xs: '0.95rem', sm: '1.1rem' }, borderRadius: 3, mt: 1, borderColor: isCalled ? 'rgba(255,255,255,0.5)' : '#cbd5e1' }}
+          >
+            {t('goToDashboard')}
+          </Button>
         </Box>
 
       </Container>
       
       {/* Feedback Dialog */}
-      <Dialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
-        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>How was our service?</DialogTitle>
+      <Dialog open={feedbackOpen} onClose={() => setFeedbackOpen(false)} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
+        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>{t('howWasService')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
           <Rating
             name="service-rating"
             value={rating}
             onChange={(_, newValue) => setRating(newValue)}
             size="large"
-            sx={{ fontSize: '3rem' }}
+            sx={{ fontSize: { xs: '2.5rem', sm: '3rem' } }}
           />
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
-          <Button onClick={() => setFeedbackOpen(false)} disabled={feedbackPending} sx={{ fontWeight: 'bold' }}>Cancel</Button>
+          <Button onClick={() => setFeedbackOpen(false)} disabled={feedbackPending} sx={{ fontWeight: 'bold' }}>{t('cancel')}</Button>
           <Button variant="contained" onClick={() => submitFeedback()} disabled={feedbackPending || !rating} sx={{ fontWeight: 'bold', px: 4 }}>
-            {feedbackPending ? 'Submitting...' : 'Submit'}
+            {feedbackPending ? t('submitting') : t('submit')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delay Dialog */}
-      <Dialog open={delayOpen} onClose={() => setDelayOpen(false)} PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
-        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>Report Delay</DialogTitle>
+      <Dialog open={delayOpen} onClose={() => setDelayOpen(false)} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: 4, p: 2 } }}>
+        <DialogTitle sx={{ fontWeight: '900', textAlign: 'center', pb: 1 }}>{t('reportDelay')}</DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
-          <Typography sx={{ mb: 3 }} align="center" color="text.secondary">
-            Running late? We can push your slot back and let others go first so you don't lose your token.
+          <Typography sx={{ mb: 3, fontSize: { xs: '0.85rem', sm: '1rem' } }} align="center" color="text.secondary">
+            {t('delayDesc')}
           </Typography>
           <TextField
             type="number"
-            label="I will be late by (minutes)"
+            label={t('lateByMinutes')}
             value={delayMinutes}
             onChange={(e) => setDelayMinutes(parseInt(e.target.value) || 0)}
             InputProps={{ inputProps: { min: 1, max: 120 } }}
@@ -252,9 +264,9 @@ export const CitizenTracker: React.FC = () => {
           />
         </DialogContent>
         <DialogActions sx={{ p: 2, justifyContent: 'center' }}>
-          <Button onClick={() => setDelayOpen(false)} disabled={delayPending} sx={{ fontWeight: 'bold' }}>Cancel</Button>
-          <Button variant="contained" color="warning" onClick={() => reportDelay()} disabled={delayPending || delayMinutes <= 0} sx={{ fontWeight: 'bold', px: 4 }}>
-            {delayPending ? 'Processing...' : 'Confirm Delay'}
+          <Button onClick={() => setDelayOpen(false)} disabled={delayPending} sx={{ fontWeight: 'bold' }}>{t('cancel')}</Button>
+          <Button variant="contained" color="warning" onClick={() => reportDelayMut()} disabled={delayPending || delayMinutes <= 0} sx={{ fontWeight: 'bold', px: 4 }}>
+            {delayPending ? t('processing') : t('confirmDelay')}
           </Button>
         </DialogActions>
       </Dialog>

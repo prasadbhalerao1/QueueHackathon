@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { App } from './App';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { theme } from './common/theme/theme';
-
+import './common/i18n/i18n';
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

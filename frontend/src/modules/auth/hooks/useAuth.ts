@@ -31,8 +31,20 @@ export const useCitizenLoginMutation = () => {
   });
 };
 
-
-
+export const useRegisterMutation = () => {
+  return useMutation({
+    mutationFn: async (credentials: { name: string; phone: string; password: string }) => {
+      const { data } = await api.post('/api/auth/register', credentials);
+      return data.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem('jwt_token', data.access_token);
+      localStorage.setItem('user_role', data.role);
+      if (data.user_name) localStorage.setItem('user_name', data.user_name);
+      if (data.user_id) localStorage.setItem('user_id', data.user_id);
+    },
+  });
+};
 
 export const logout = () => {
   localStorage.removeItem('jwt_token');

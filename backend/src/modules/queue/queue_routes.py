@@ -2,7 +2,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from src.modules.queue.queue_controller import QueueController
 from src.modules.queue.queue_schema import (
     AdvanceTokenRequest, WalkInRequest, TransferRequest,
-    CheckInRequest, DelayReportRequest, FeedbackRequest
+    CheckInRequest, DelayReportRequest, FeedbackRequest,
+    WebBookingRequest, RescheduleRequest
 )
 from src.modules.auth.auth_deps import RoleChecker, get_current_user
 from src.common.constants.enums import UserRole
@@ -11,6 +12,18 @@ queue_router = APIRouter()
 
 
 # --- PUBLIC ROUTES (no auth required) ---
+
+@queue_router.post("/web-booking")
+async def register_web_booking(request: WebBookingRequest):
+    return await QueueController.register_web_booking(request)
+
+@queue_router.patch("/reschedule/{token_id}")
+async def reschedule_token(token_id: str, request: RescheduleRequest):
+    return await QueueController.reschedule_token(token_id, request)
+
+@queue_router.patch("/cancel/{token_id}")
+async def cancel_token(token_id: str):
+    return await QueueController.cancel_token(token_id)
 
 @queue_router.get("/branches")
 async def get_branches():

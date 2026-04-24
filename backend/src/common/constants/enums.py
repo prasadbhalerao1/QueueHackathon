@@ -19,4 +19,5 @@ class UserRole(str, Enum):
 class BookingType(str, Enum):
     WALK_IN = "WALK_IN"
     WHATSAPP = "WHATSAPP"
+    WEB = "WEB"
     VIP = "VIP"

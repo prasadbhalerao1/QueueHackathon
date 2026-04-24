@@ -1,6 +1,6 @@
 from datetime import timedelta
 from src.modules.auth.auth_service import AuthService
-from src.modules.auth.auth_schema import LoginRequest, CitizenLoginRequest, TokenResponse
+from src.modules.auth.auth_schema import LoginRequest, CitizenLoginRequest, TokenResponse, RegisterRequest
 from src.common.security import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
 class AuthController:
@@ -22,6 +22,20 @@ class AuthController:
     async def citizen_login(request: CitizenLoginRequest) -> dict:
         # Request is a validated CitizenLoginRequest
         user = await AuthService.authenticate_citizen(request.phone)
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(subject=user.phone, expires_delta=access_token_expires)
+        
+        response = TokenResponse(
+            access_token=access_token,
+            role=user.role,
+            user_name=user.name,
+            user_id=str(user.id)
+        )
+        return {"status": "success", "data": response.model_dump(by_alias=True) if hasattr(response, "model_dump") else response}
+
+    @staticmethod
+    async def register(request: RegisterRequest) -> dict:
+        user = await AuthService.register_citizen(request.name, request.phone, request.password)
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(subject=user.phone, expires_delta=access_token_expires)
         

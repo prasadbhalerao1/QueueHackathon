@@ -1,0 +1,342 @@
+{
+  "version": "1.0",
+  "project": "QueueOS",
+  "state": "Maharashtra",
+  "last_updated": "2026-04-25",
+  "disclaimer": "Documents may vary by district, tehsil, municipal office, or policy changes. Verify locally before submission.",
+  "services": [
+    {
+      "id": "aadhaar_update",
+      "name": "Aadhaar Update",
+      "name_local": "आधार अपडेट",
+      "aliases": [
+        "aadhaar",
+        "aadhar",
+        "aadhaar update",
+        "aadhar update",
+        "aadhaar correction",
+        "name change in aadhaar",
+        "address change aadhaar",
+        "mobile update aadhaar",
+        "dob update aadhaar",
+        "आधार",
+        "आधार अपडेट"
+      ],
+      "required_documents": [
+        "Original Aadhaar Card"
+      ],
+      "proofs": {
+        "identity_any_one": [
+          "PAN Card",
+          "Driving License",
+          "Passport",
+          "Voter ID"
+        ],
+        "address_any_one": [
+          "Electricity Bill",
+          "Passport",
+          "Voter ID",
+          "Bank Statement"
+        ],
+        "dob_any_one": [
+          "Birth Certificate",
+          "10th Marksheet",
+          "Passport"
+        ]
+      },
+      "special_cases": {
+        "name_change": [
+          "Marriage Certificate",
+          "Gazette Notification",
+          "Affidavit"
+        ]
+      }
+    },
+
+    {
+      "id": "income_certificate",
+      "name": "Income Certificate",
+      "name_local": "उत्पन्नाचा दाखला",
+      "aliases": [
+        "income certificate",
+        "income cert",
+        "utpannacha dakhla",
+        "utpanna dakhla",
+        "salary certificate",
+        "income proof",
+        "उत्पन्नाचा दाखला"
+      ],
+      "required_documents": [
+        "Aadhaar Card"
+      ],
+      "proofs": {
+        "income_any_one": [
+          "Salary Slip",
+          "Form 16",
+          "Income Tax Return",
+          "Talathi Report"
+        ]
+      },
+      "optional_documents": [
+        "Ration Card",
+        "Self Declaration"
+      ]
+    },
+
+    {
+      "id": "caste_certificate",
+      "name": "Caste Certificate",
+      "name_local": "जात प्रमाणपत्र",
+      "aliases": [
+        "caste certificate",
+        "jat pramanpatra",
+        "jatiche certificate",
+        "जात प्रमाणपत्र"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "School Leaving Certificate"
+      ],
+      "proofs": {
+        "lineage_any_one": [
+          "Father School Leaving Certificate",
+          "Grandfather School Leaving Certificate",
+          "Revenue Caste Extract",
+          "Kotwal Book Nakkal"
+        ]
+      },
+      "optional_documents": [
+        "Ration Card",
+        "Address Proof"
+      ]
+    },
+
+    {
+      "id": "non_creamy_layer",
+      "name": "Non-Creamy Layer Certificate",
+      "name_local": "नॉन-क्रीमी लेयर प्रमाणपत्र",
+      "aliases": [
+        "ncl",
+        "non creamy",
+        "non creamy layer",
+        "ncl certificate",
+        "non-creamy",
+        "नॉन क्रीमी"
+      ],
+      "required_documents": [
+        "Caste Certificate",
+        "Aadhaar Card"
+      ],
+      "proofs": {
+        "income_last_3_years_any_one": [
+          "ITR",
+          "Talathi Income Report"
+        ]
+      },
+      "optional_documents": [
+        "Ration Card",
+        "Self Declaration"
+      ]
+    },
+
+    {
+      "id": "ews_certificate",
+      "name": "EWS Certificate",
+      "name_local": "आर्थिक दुर्बल घटक प्रमाणपत्र",
+      "aliases": [
+        "ews",
+        "ews certificate",
+        "economically weaker section",
+        "ईडब्ल्यूएस"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "Domicile Certificate"
+      ],
+      "proofs": {
+        "income_any_one": [
+          "ITR",
+          "Talathi Report"
+        ]
+      },
+      "optional_documents": [
+        "Ration Card",
+        "Self Declaration"
+      ]
+    },
+
+    {
+      "id": "domicile_certificate",
+      "name": "Domicile Certificate",
+      "name_local": "रहिवासी दाखला",
+      "aliases": [
+        "domicile",
+        "domicile certificate",
+        "rahivasi",
+        "residence certificate",
+        "nationality certificate",
+        "रहिवासी दाखला"
+      ],
+      "required_documents": [
+        "Aadhaar Card"
+      ],
+      "proofs": {
+        "age_any_one": [
+          "Birth Certificate",
+          "School Leaving Certificate",
+          "Passport"
+        ],
+        "address_any_one": [
+          "Old Electricity Bill",
+          "Property Tax Receipt",
+          "Rent Agreement",
+          "Ration Card"
+        ]
+      }
+    },
+
+    {
+      "id": "ration_card",
+      "name": "Ration Card",
+      "name_local": "रेशन कार्ड",
+      "aliases": [
+        "ration card",
+        "ration",
+        "new ration card",
+        "रेशन कार्ड"
+      ],
+      "required_documents": [
+        "Aadhaar of all family members",
+        "Address Proof"
+      ],
+      "special_cases": {
+        "add_spouse": [
+          "Marriage Certificate"
+        ],
+        "remove_member": [
+          "Death Certificate"
+        ]
+      }
+    },
+
+    {
+      "id": "senior_citizen_certificate",
+      "name": "Senior Citizen Certificate",
+      "name_local": "ज्येष्ठ नागरिक प्रमाणपत्र",
+      "aliases": [
+        "senior citizen",
+        "senior citizen card",
+        "old age card",
+        "ज्येष्ठ नागरिक"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "Age Proof",
+        "Address Proof",
+        "3 Passport Photos"
+      ],
+      "proofs": {
+        "medical_any_one": [
+          "Doctor Fitness Certificate",
+          "Blood Group Report"
+        ]
+      }
+    },
+
+    {
+      "id": "birth_certificate",
+      "name": "Birth Certificate",
+      "name_local": "जन्म दाखला",
+      "aliases": [
+        "birth certificate",
+        "janma dakhla",
+        "जन्म दाखला"
+      ],
+      "required_documents": [
+        "Hospital Letter or Gram Panchayat Record",
+        "Parents Aadhaar Card"
+      ],
+      "optional_documents": [
+        "Marriage Certificate of Parents"
+      ]
+    },
+
+    {
+      "id": "death_certificate",
+      "name": "Death Certificate",
+      "name_local": "मृत्यू दाखला",
+      "aliases": [
+        "death certificate",
+        "mrutyu dakhla",
+        "मृत्यू दाखला"
+      ],
+      "required_documents": [
+        "Doctor Death Certificate",
+        "Applicant Aadhaar Card",
+        "Deceased Aadhaar Card",
+        "Cremation Receipt"
+      ]
+    },
+
+    {
+      "id": "voter_id",
+      "name": "Voter ID",
+      "name_local": "मतदार ओळखपत्र",
+      "aliases": [
+        "voter id",
+        "voter card",
+        "epic card",
+        "मतदार कार्ड"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "Age Proof",
+        "Address Proof",
+        "Passport Photo"
+      ]
+    },
+
+    {
+      "id": "driving_license_learner",
+      "name": "Learner Driving License",
+      "name_local": "शिकाऊ वाहन परवाना",
+      "aliases": [
+        "learner license",
+        "llr",
+        "driving learner",
+        "learning license"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "Age Proof",
+        "Address Proof"
+      ],
+      "special_cases": {
+        "age_above_40": [
+          "Form 1A Medical Certificate"
+        ]
+      }
+    },
+
+    {
+      "id": "pan_card",
+      "name": "PAN Card",
+      "name_local": "पॅन कार्ड",
+      "aliases": [
+        "pan",
+        "pan card",
+        "new pan",
+        "पॅन कार्ड"
+      ],
+      "required_documents": [
+        "Aadhaar Card",
+        "2 Passport Photos",
+        "Form 49A"
+      ],
+      "validation_rules": [
+        "Aadhaar name spelling should match application",
+        "DOB should be correct"
+      ]
+    }
+  ]
+}

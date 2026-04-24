@@ -2,7 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import {
   Box, Card, Typography, Button, Skeleton, Snackbar, Alert, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, MenuItem, Select, FormControl, InputLabel, Chip,
-  Paper, Grid, IconButton, Tooltip, Stack, Badge
+  Paper, Grid, IconButton, Tooltip, Stack, Badge, Switch, FormControlLabel
 } from '@mui/material';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../../../common/api';
@@ -24,8 +24,11 @@ import {
   AccessTime as TimeIcon,
   DesktopWindows as DeskIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
+import { LanguageToggle } from '../../../common/components/LanguageToggle';
 
 export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = false }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data: branches } = useBranches();
   const { data: services } = useServices();
@@ -66,17 +69,38 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
     localStorage.setItem('staff_desk', val);
   };
 
+  // Availability Toggle
+  const userId = localStorage.getItem('user_id');
+  const [isAvailable, setIsAvailable] = useState<boolean>(true);
+  const { mutate: toggleAvailability } = useMutation({
+    mutationFn: async (available: boolean) => {
+      if (!userId) throw new Error("No user ID found");
+      const { data } = await api.patch(`/api/users/${userId}/availability`, { is_available: available });
+      return data;
+    },
+    onSuccess: (data) => {
+      setSnackbarMessage(`Status updated to: ${data.is_available ? 'Available' : 'Unavailable'}`);
+      setSnackbarOpen(true);
+    }
+  });
+
+  const handleAvailabilityToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setIsAvailable(checked);
+    toggleAvailability(checked);
+  };
+
   // Filtering Queue
   const servingQueue = useMemo(() => 
-    queue?.filter(t => (t.status === QueueStatus.CALLED || t.status === QueueStatus.IN_PROGRESS) && t.desk_number === parseInt(deskNumber)) || []
+    queue?.filter(tk => (tk.status === QueueStatus.CALLED || tk.status === QueueStatus.IN_PROGRESS) && tk.desk_number === parseInt(deskNumber)) || []
   , [queue, deskNumber]);
 
   const waitingQueue = useMemo(() => 
-    queue?.filter(t => t.status === QueueStatus.WAITING || t.status === QueueStatus.ARRIVED || t.status === QueueStatus.BOOKED || t.status === QueueStatus.NO_SHOW) || []
+    queue?.filter(tk => tk.status === QueueStatus.WAITING || tk.status === QueueStatus.ARRIVED || tk.status === QueueStatus.BOOKED || tk.status === QueueStatus.NO_SHOW) || []
   , [queue]);
 
   const nextUp = useMemo(() => 
-    waitingQueue.filter(t => t.status !== QueueStatus.NO_SHOW)[0] || null
+    waitingQueue.filter(tk => tk.status !== QueueStatus.NO_SHOW)[0] || null
   , [waitingQueue]);
 
   const currentBranch = useMemo(() => 
@@ -110,7 +134,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
       onSuccess: () => {
         setSnackbarMessage(`Token ${token.token_number} updated to ${newStatus.replace('_', ' ')}`);
         setSnackbarOpen(true);
-        undoTimeoutRef.current = setTimeout(() => setLastActionTokenId(null), 10000); // 10s undo window in UI
+        undoTimeoutRef.current = setTimeout(() => setLastActionTokenId(null), 10000);
       },
     });
   };
@@ -170,16 +194,19 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
   return (
     <Box sx={{ maxWidth: '1600px', mx: 'auto', p: { xs: 2, md: 4 }, bgcolor: '#f8fafc', minHeight: '100vh' }}>
       
-      {/* Network / Rush Alerts */}
+      {/* Language + Network / Rush Alerts */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <LanguageToggle />
+      </Box>
       <Stack spacing={1} sx={{ mb: 3 }}>
         {isOffline && (
           <Alert severity="warning" variant="filled" sx={{ fontWeight: 'bold', borderRadius: 2 }}>
-            OFFLINE MODE: Caching actions locally. They will sync automatically when online.
+            {t('offlineMode')}
           </Alert>
         )}
         {currentBranch?.rush_mode && (
           <Alert severity="error" variant="filled" icon={<RushIcon />} sx={{ fontWeight: 'bold', borderRadius: 2 }}>
-            RUSH PROTOCOL ACTIVE: Walk-ins are blocked. System in high-capacity mode.
+            {t('rushProtocolActive')}
           </Alert>
         )}
       </Stack>
@@ -188,7 +215,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
       <Paper elevation={0} sx={{ p: 0, borderRadius: 3, overflow: 'hidden', border: '1px solid #e2e8f0', mb: 4, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', p: 4, gap: 3, bgcolor: '#ffffff', borderBottom: '4px solid #1e3a8a' }}>
           <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: '-1.5px', color: '#1e3a8a' }}>Operational Command</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 900, mb: 1, letterSpacing: '-1.5px', color: '#1e3a8a' }}>{t('operationalCommand')}</Typography>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
               <FormControl size="small" sx={{ minWidth: 220 }}>
                 <Select
@@ -202,10 +229,10 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
               </FormControl>
               
               <FormControl size="small" sx={{ width: 120 }}>
-                <InputLabel sx={{ fontWeight: 700 }}>Desk #</InputLabel>
+                <InputLabel sx={{ fontWeight: 700 }}>{t('deskLabel')}</InputLabel>
                 <Select 
                   value={deskNumber} 
-                  label="Desk #" 
+                  label={t('deskLabel')} 
                   onChange={(e) => updateDesk(e.target.value as string)}
                   sx={{ borderRadius: 2, fontWeight: 800, bgcolor: '#f1f5f9' }}
                 >
@@ -217,8 +244,13 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
 
               <Chip 
                 icon={<PersonIcon />} 
-                label={`${queue?.length || 0} Citizens Active`} 
+                label={t('citizensActive', { count: queue?.length || 0 })} 
                 sx={{ bgcolor: '#eff6ff', color: '#1e40af', fontWeight: 700, px: 1 }} 
+              />
+              
+              <FormControlLabel
+                control={<Switch checked={isAvailable} onChange={handleAvailabilityToggle} color="primary" />}
+                label={<Typography sx={{ fontWeight: 700 }}>{t('available')}</Typography>}
               />
             </Stack>
           </Box>
@@ -233,7 +265,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                 onClick={() => toggleRush()}
                 sx={{ borderRadius: 2, fontWeight: 800, px: 3, height: 48 }}
               >
-                {currentBranch?.rush_mode ? "LIFT RUSH" : "RUSH MODE"}
+                {currentBranch?.rush_mode ? t('liftRush') : t('rushMode')}
               </Button>
             </Tooltip>
             <Tooltip title="Pause Desk (Return tokens to pool)">
@@ -245,7 +277,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                 onClick={handlePauseDesk}
                 sx={{ borderRadius: 2, fontWeight: 800, px: 3, height: 48, mr: 2 }}
               >
-                PAUSE DESK
+                {t('pauseDesk')}
               </Button>
             </Tooltip>
             <Button 
@@ -257,7 +289,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
               disabled={!!currentBranch?.rush_mode}
               sx={{ borderRadius: 2, fontWeight: 800, px: 3, height: 48, bgcolor: '#334155', '&:hover': { bgcolor: '#1e293b' } }}
             >
-              {currentBranch?.rush_mode ? "LOCKED" : "WALK-IN"}
+              {currentBranch?.rush_mode ? t('locked') : t('walkIn')}
             </Button>
             <Button 
               variant="contained" 
@@ -276,7 +308,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                 '&:hover': { bgcolor: '#1d4ed8' }
               }}
             >
-              CALL NEXT
+              {t('callNext')}
             </Button>
           </Stack>
         </Box>
@@ -286,13 +318,13 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
         {/* LEFT COLUMN: ACTIVE SERVING */}
         <Grid size={{ xs: 12, lg: 4 }} sx={{ borderRight: { lg: '1px solid #e2e8f0' }, pr: { lg: 4 } }}>
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b' }}>Currently at Desks</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b' }}>{t('currentlyAtDesks')}</Typography>
             <Badge badgeContent={servingQueue.length} color="primary" sx={{ ml: 1 }} />
           </Box>
           <Stack spacing={2}>
             {servingQueue.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3, border: '2px dashed #cbd5e1', bgcolor: 'transparent' }}>
-                <Typography color="text.secondary">No citizens currently being served.</Typography>
+                <Typography color="text.secondary">{t('noCitizensServed')}</Typography>
               </Paper>
             ) : (
               servingQueue.map(token => (
@@ -304,7 +336,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                   <Box sx={{ p: 3 }}>
                     <Stack direction="row" spacing={1} sx={{ mb: 1, alignItems: 'center' }}>
                       <DeskIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary' }}>Serving at Desk {deskNumber}</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.secondary' }}>{t('servingAtDesk', { desk: deskNumber })}</Typography>
                     </Stack>
                     <Typography variant="h6" sx={{ fontWeight: 900, color: '#1e293b', mb: 0.5 }}>{token.user?.name || 'Anonymous'}</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 700, color: '#3b82f6', mb: 3, textTransform: 'uppercase', letterSpacing: '1px' }}>{token.service?.name}</Typography>
@@ -312,16 +344,16 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                     <Stack spacing={2}>
                       {token.status === QueueStatus.CALLED && (
                         <Button fullWidth variant="contained" color="success" aria-label="Start serving this citizen" startIcon={<StartIcon />} onClick={() => handleAction(token, QueueStatus.IN_PROGRESS)} sx={{ fontWeight: 900, height: 48, borderRadius: 2 }}>
-                          START SERVICE
+                          {t('startService')}
                         </Button>
                       )}
                       {token.status === QueueStatus.IN_PROGRESS && (
                         <Button fullWidth variant="contained" color="primary" aria-label="Complete service for this citizen" startIcon={<DoneIcon />} onClick={() => handleAction(token, QueueStatus.COMPLETED)} sx={{ fontWeight: 900, height: 48, borderRadius: 2, bgcolor: '#1e3a8a' }}>
-                          COMPLETE
+                          {t('complete')}
                         </Button>
                       )}
                       <Button fullWidth variant="outlined" color="error" aria-label="Mark citizen as not present" startIcon={<NoShowIcon />} onClick={() => handleAction(token, QueueStatus.NO_SHOW)} sx={{ fontWeight: 800, borderRadius: 2 }}>
-                        NOT PRESENT
+                        {t('notPresent')}
                       </Button>
                     </Stack>
                   </Box>
@@ -334,7 +366,7 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
         {/* RIGHT COLUMN: WAITING QUEUE */}
         <Grid size={{ xs: 12, lg: 8 }} sx={{ pl: { lg: 2 } }}>
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b' }}>Waiting List</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e293b' }}>{t('waitingList')}</Typography>
             <Badge badgeContent={waitingQueue.length} color="warning" sx={{ ml: 1 }} />
           </Box>
           <Grid container spacing={2}>
@@ -347,8 +379,8 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
             ) : waitingQueue.length === 0 ? (
               <Grid size={{ xs: 12 }}>
                 <Paper sx={{ p: 10, textAlign: 'center', borderRadius: 4, border: '2px dashed #cbd5e1', bgcolor: '#f8fafc' }}>
-                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#64748b' }}>Queue is entirely clear!</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1 }}>All citizens have been processed for today.</Typography>
+                  <Typography variant="h5" sx={{ fontWeight: 900, color: '#64748b' }}>{t('queueClear')}</Typography>
+                  <Typography color="text.secondary" sx={{ mt: 1 }}>{t('allProcessed')}</Typography>
                 </Paper>
               </Grid>
             ) : (
@@ -393,17 +425,17 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
                     <Stack direction="row" spacing={1}>
                       {token.status === QueueStatus.NO_SHOW ? (
                         <Button fullWidth variant="contained" color="warning" size="small" onClick={() => handleAction(token, QueueStatus.WAITING)} sx={{ fontWeight: 800 }}>
-                          Grace Re-entry
+                          {t('graceReentry')}
                         </Button>
                       ) : (
                         <>
                           {(token.status === QueueStatus.BOOKED || token.status === QueueStatus.WAITING) && (
                             <Button fullWidth variant="outlined" color="success" size="small" onClick={() => handleAction(token, QueueStatus.ARRIVED)} sx={{ fontWeight: 800 }}>
-                              Arrived
+                              {t('arrived')}
                             </Button>
                           )}
                           <Button fullWidth variant="contained" color="primary" size="small" onClick={() => handleAction(token, QueueStatus.CALLED)} sx={{ fontWeight: 800 }}>
-                            Call
+                            {t('call')}
                           </Button>
                         </>
                       )}
@@ -425,40 +457,40 @@ export const StaffDashboard: React.FC<{ isOffline?: boolean }> = ({ isOffline = 
       
       {/* Walk-in Dialog */}
       <Dialog open={walkInModalOpen} onClose={() => setWalkInModalOpen(false)} slotProps={{ paper: { sx: { borderRadius: 3, width: '100%', maxWidth: 450 } } }}>
-        <DialogTitle sx={{ fontWeight: 900 }}>Register Walk-in Citizen</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>{t('registerWalkIn')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField fullWidth label="Citizen Name" variant="outlined" value={walkInData.name} onChange={e => setWalkInData({...walkInData, name: e.target.value})} />
-            <TextField fullWidth label="Phone Contact" variant="outlined" value={walkInData.phone} onChange={e => setWalkInData({...walkInData, phone: e.target.value})} />
+            <TextField fullWidth label={t('citizenName')} variant="outlined" value={walkInData.name} onChange={e => setWalkInData({...walkInData, name: e.target.value})} />
+            <TextField fullWidth label={t('phoneContact')} variant="outlined" value={walkInData.phone} onChange={e => setWalkInData({...walkInData, phone: e.target.value})} />
             <FormControl fullWidth>
-              <InputLabel>Target Service</InputLabel>
-              <Select value={walkInData.serviceId} label="Target Service" onChange={e => setWalkInData({...walkInData, serviceId: e.target.value})}>
+              <InputLabel>{t('targetService')}</InputLabel>
+              <Select value={walkInData.serviceId} label={t('targetService')} onChange={e => setWalkInData({...walkInData, serviceId: e.target.value})}>
                 {services?.map(s => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}
               </Select>
             </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setWalkInModalOpen(false)} color="inherit">Cancel</Button>
-          <Button variant="contained" onClick={() => registerWalkIn()} disabled={!walkInData.serviceId} sx={{ fontWeight: 800 }}>Confirm Booking</Button>
+          <Button onClick={() => setWalkInModalOpen(false)} color="inherit">{t('cancel')}</Button>
+          <Button variant="contained" onClick={() => registerWalkIn()} disabled={!walkInData.serviceId} sx={{ fontWeight: 800 }}>{t('confirmBooking')}</Button>
         </DialogActions>
       </Dialog>
 
       {/* Transfer Dialog */}
       <Dialog open={transferModalOpen} onClose={() => setTransferModalOpen(false)} slotProps={{ paper: { sx: { borderRadius: 3, width: '100%', maxWidth: 450 } } }}>
-        <DialogTitle sx={{ fontWeight: 900 }}>Transfer Token {transferTokenData?.token_number}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900 }}>{t('transferToken', { token: transferTokenData?.token_number })}</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>Select the correct branch to transfer this citizen. They will be placed at the end of the target queue.</Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>{t('transferDesc')}</Typography>
           <FormControl fullWidth>
-            <InputLabel>Target Branch</InputLabel>
-            <Select value={targetBranchId} label="Target Branch" onChange={e => setTargetBranchId(e.target.value)}>
+            <InputLabel>{t('targetBranch')}</InputLabel>
+            <Select value={targetBranchId} label={t('targetBranch')} onChange={e => setTargetBranchId(e.target.value)}>
               {branches?.filter(b => b.id !== selectedBranchId).map(b => <MenuItem key={b.id} value={b.id}>{b.name}</MenuItem>)}
             </Select>
           </FormControl>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setTransferModalOpen(false)} color="inherit">Cancel</Button>
-          <Button variant="contained" color="warning" onClick={handleTransfer} disabled={!targetBranchId} sx={{ fontWeight: 800 }}>Complete Transfer</Button>
+          <Button onClick={() => setTransferModalOpen(false)} color="inherit">{t('cancel')}</Button>
+          <Button variant="contained" color="warning" onClick={handleTransfer} disabled={!targetBranchId} sx={{ fontWeight: 800 }}>{t('completeTransfer')}</Button>
         </DialogActions>
       </Dialog>
 

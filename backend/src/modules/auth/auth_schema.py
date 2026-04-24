@@ -9,6 +9,11 @@ class LoginRequest(BaseModel):
 class CitizenLoginRequest(BaseModel):
     phone: str
 
+class RegisterRequest(BaseModel):
+    name: str
+    phone: str
+    password: str
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
