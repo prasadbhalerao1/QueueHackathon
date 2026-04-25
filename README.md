@@ -107,7 +107,7 @@ npm run dev
 
 ## Project Structure
 
-```
+```text
 QueueHackathon/
 ├── backend/                    # FastAPI application
 ├── frontend/                   # React + Vite application
