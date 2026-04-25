@@ -4,9 +4,13 @@ from src.common.constants.enums import QueueStatus
 from google import genai
 from src.common.config.config import settings
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
 class AIService:
+    @staticmethod
+    def _get_client():
+        if not settings.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY is not set")
+        return genai.Client(api_key=settings.GEMINI_API_KEY)
+
     @staticmethod
     async def predict_crowd(branch_id: str):
         waiting = await Token.find(Token.branch.id == PydanticObjectId(branch_id), Token.status == QueueStatus.WAITING).count()
@@ -71,6 +75,7 @@ class AIService:
             f"=== SERVICES.JSON ===\n{services_data}\n"
         )
         
+        client = AIService._get_client()
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=f"{system_instruction}\n\nCitizen: {message}"
