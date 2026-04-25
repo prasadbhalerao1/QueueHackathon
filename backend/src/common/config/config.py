@@ -32,8 +32,13 @@ def get_allowed_origins():
     
     if environment == "production":
         # For production, allow specific frontend URLs (comma-separated if multiple)
-        urls = [url.strip().rstrip("/") for url in frontend_url.split(",")]
-        return urls
+        urls = [url.strip().rstrip("/") for url in frontend_url.replace(";", ",").split(",")]
+        # Always allow demo frontends
+        urls.extend([
+            "https://queueos-frontend-552912088240.us-central1.run.app",
+            "https://queue-system-demo.vercel.app"
+        ])
+        return list(set(urls))
     else:
         # For development, allow localhost variations and the frontend URL
         return [

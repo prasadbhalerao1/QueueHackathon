@@ -8,8 +8,11 @@ from src.common.config.config import get_allowed_origins
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
-    # Seeding is now manual. Call POST /api/queue/admin/seed/demo
+    # Ensure DB is connected on startup
+    try:
+        await init_db()
+    except Exception as e:
+        print(f"Startup DB Error: {e}")
     yield
 
 app = FastAPI(
