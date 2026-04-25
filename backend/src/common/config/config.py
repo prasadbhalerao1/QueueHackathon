@@ -2,13 +2,13 @@ from pydantic_settings import BaseSettings
 import os
 
 class Settings(BaseSettings):
-    # Required secrets - must be provided in .env file
-    MONGODB_URI: str
-    GEMINI_API_KEY: str
-    TWILIO_ACCOUNT_SID: str
-    TWILIO_AUTH_TOKEN: str
-    TWILIO_WHATSAPP_NUMBER: str
-    SECRET_KEY: str
+    # Required secrets - made optional for startup stability
+    MONGODB_URI: Optional[str] = None
+    GEMINI_API_KEY: Optional[str] = None
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_WHATSAPP_NUMBER: Optional[str] = None
+    SECRET_KEY: Optional[str] = None
     
     # Configuration with sensible defaults
     GEMINI_MODEL: str = "gemini-2.5-flash"
