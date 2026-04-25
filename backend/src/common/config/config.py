@@ -32,7 +32,7 @@ def get_allowed_origins():
     
     if environment == "production":
         # For production, allow specific frontend URLs (comma-separated if multiple)
-        urls = [url.strip().rstrip("/") for url in frontend_url.split(",")]
+        urls = [url.strip().rstrip("/") for url in frontend_url.replace(";", ",").split(",")]
         return urls
     else:
         # For development, allow localhost variations and the frontend URL
