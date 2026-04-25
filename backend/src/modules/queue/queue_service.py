@@ -286,7 +286,7 @@ class QueueService:
         if not users: await user.save()
 
         active = len(await Token.find({"user.$id": user.id, "status": {"$in": [QueueStatus.BOOKED, QueueStatus.WAITING, QueueStatus.ARRIVED]}}).to_list())
-        if active >= 2: raise QueueOSException(429, "Max 2 active tokens allowed.")
+        if active >= 10: raise QueueOSException(429, "Max 10 active tokens allowed for demo.")
 
         service = await Service.get(PydanticObjectId(service_id)) if service_id else await Service.find_one()
         last = await Token.find(Token.branch.id == branch.id).sort("-expected_service_time").first_or_none()
