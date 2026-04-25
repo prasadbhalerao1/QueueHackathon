@@ -1,6 +1,6 @@
 node_modules
+# .env removed to allow build-time variables in Cloud Run
 dist
-.env
 .git
 .gitignore
 README.md

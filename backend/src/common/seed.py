@@ -80,8 +80,7 @@ async def seed_demo_data():
     demo_citizen = User(phone="7777777777", name="Test Citizen (Demo)", role=UserRole.CITIZEN, hashed_password=admin_hash)
     citizens.append(demo_citizen)
 
-    for c in citizens:
-        await c.save()
+    await User.insert_many(citizens)
 
     logger.info(f"Created {len(citizens)} citizen profiles.")
 
@@ -93,8 +92,7 @@ async def seed_demo_data():
         Branch(name="Tathawade Ward 32 Office", lat=18.6149, lng=73.7480, active_desks=3, total_desks=3),
         Branch(name="Kothrud CFC (Ward 15)", lat=18.5074, lng=73.8077, active_desks=4, total_desks=4),
     ]
-    for b in branches:
-        await b.save()
+    await Branch.insert_many(branches)
 
     main_branch = branches[0]
     secondary_branch = branches[1]
@@ -121,8 +119,7 @@ async def seed_demo_data():
         Service(name="Marriage Certificate (विवाह प्रमाणपत्र)", base_duration_minutes=25, priority_level=2,
                 required_docs=["Aadhaar Cards (Both)", "Wedding Invitation/Photos", "Age Proof", "Address Proof"]),
     ]
-    for s in services:
-        await s.save()
+    await Service.insert_many(services)
 
     # ──────────────────────────────────────────────────────────────────────
     # 6. SEED TOKENS — Every Real-World Edge Case
@@ -416,11 +413,11 @@ async def seed_demo_data():
     print("-" * 60)
     print("  DEMO CREDENTIALS (PASSWORD FOR ALL: password)")
     print("-" * 60)
-    print("  Super Admin     →  Phone: 9999999999")
-    print("  Staff Officer 1 →  Phone: 8888888888")
-    print("  Staff Officer 2 →  Phone: 8888888877")
-    print("  Staff Officer 3 →  Phone: 8888888866")
-    print("  Test Citizen     →  Phone: 7777777777")
+    print("  Super Admin     -  Phone: 9999999999")
+    print("  Staff Officer 1 -  Phone: 8888888888")
+    print("  Staff Officer 2 -  Phone: 8888888877")
+    print("  Staff Officer 3 -  Phone: 8888888866")
+    print("  Test Citizen     -  Phone: 7777777777")
     print("-" * 60)
     print("  EDGE CASES SEEDED:")
     print("  • 60 historical tokens (analytics: completed/no-show/cancelled)")
