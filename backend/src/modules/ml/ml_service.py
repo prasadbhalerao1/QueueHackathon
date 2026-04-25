@@ -2,64 +2,81 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 from datetime import datetime
 import logging
+from beanie import PydanticObjectId
+from src.modules.queue.queue_model import Token, Branch
+from src.common.constants.enums import QueueStatus
+from beanie.operators import In
 
 logger = logging.getLogger(__name__)
 
 class MLService:
     @staticmethod
-    def predict_crowd_level(hour: int) -> dict:
+    async def predict_crowd_level(branch_id: str, hour: int) -> dict:
         """
-        Uses a Linear Regression model to predict crowd levels based on the hour of day.
-        In a real production environment, this would be trained on historical database data.
-        For this hackathon demo, we use a calibrated baseline model.
+        Uses a Linear Regression model to predict crowd levels.
+        Dynamic: Factors in the ACTUAL current waiting count of the branch.
         """
         try:
-            # Mock historical training data: 
-            # X = Hour of day (9 AM to 6 PM)
-            # y = Typical number of active tokens
-            X = np.array([[9], [10], [11], [12], [13], [14], [15], [16], [17], [18]])
-            y = np.array([12, 28, 52, 65, 35, 22, 38, 55, 32, 12]) # Mid-day and evening rush peaks
+            # 1. Fetch real-time data from the branch to make the prediction dynamic
+            current_waiting = await Token.find(
+                Token.branch.id == PydanticObjectId(branch_id),
+                In(Token.status, [QueueStatus.WAITING, QueueStatus.ARRIVED, QueueStatus.BOOKED, QueueStatus.CALLED, QueueStatus.IN_PROGRESS])
+            ).count()
+
+            # 2. Scikit-learn Logic
+            # Features: [Hour of Day, Current Active Tokens]
+            # Target: Expected additional tokens in the next hour
+            # Mock historical training set (Hour, CurrentCount) -> Resulting Load
+            X_train = np.array([
+                [9, 5], [10, 15], [11, 40], [12, 60], [13, 20], 
+                [14, 10], [15, 30], [16, 50], [17, 25], [18, 5]
+            ])
+            y_train = np.array([10, 20, 50, 70, 25, 15, 35, 60, 20, 8])
             
             model = LinearRegression()
-            model.fit(X, y)
+            model.fit(X_train, y_train)
             
-            # Predict for the requested hour
-            prediction = model.predict(np.array([[hour]]))[0]
+            # 3. Predict for current state
+            prediction = model.predict(np.array([[hour, current_waiting]]))[0]
             
-            # Categorize the prediction
-            if prediction < 20: 
-                status = "Low"
-                color = "green"
-            elif prediction < 45: 
+            # 4. Standardize for Frontend (Must match CitizenPortal.tsx expectations)
+            # Frontend expects: crowd_level (HIGH, MEDIUM, LOW) and best_time_to_visit
+            if prediction > 45:
+                level = "HIGH"
+                status = "High Density"
+            elif prediction > 20:
+                level = "MEDIUM"
                 status = "Moderate"
-                color = "orange"
-            else: 
-                status = "High"
-                color = "red"
+            else:
+                level = "LOW"
+                status = "Low Traffic"
             
-            # Suggest the best time to visit in the next few hours
-            future_hours = np.array([[h] for h in range(hour + 1, 19)])
-            if len(future_hours) > 0:
-                future_preds = model.predict(future_hours)
-                best_hour = future_hours[np.argmin(future_preds)][0]
-                best_time = f"{int(best_hour)}:00"
+            # 5. Suggest best time (find minimum predicted hour in future)
+            future_hours = []
+            for h in range(hour + 1, 19):
+                # Predict assuming current waiting count stays similar or decreases
+                future_hours.append([h, max(0, current_waiting - (h - hour)*5)])
+            
+            if future_hours:
+                future_preds = model.predict(np.array(future_hours))
+                best_hour = range(hour + 1, 19)[np.argmin(future_preds)]
+                best_time = f"{best_hour}:00"
             else:
                 best_time = "Tomorrow Morning"
-                
+
             return {
-                "predicted_tokens": max(0, int(prediction)),
+                "crowd_level": level,  # Match frontend uppercase
                 "crowd_status": status,
-                "status_color": color,
-                "current_hour": hour,
+                "predicted_load": max(0, int(prediction)),
                 "best_time_to_visit": best_time,
-                "confidence_score": 0.88,
-                "model_type": "LinearRegression (Scikit-learn)"
+                "current_waiting_count": current_waiting,
+                "model": "LinearRegression (sklearn)"
             }
+
         except Exception as e:
-            logger.error(f"ML Prediction Error: {e}")
+            logger.error(f"ML Error: {e}")
             return {
-                "predicted_tokens": 0,
-                "crowd_status": "Unknown",
-                "best_time_to_visit": "N/A",
+                "crowd_level": "LOW",
+                "best_time_to_visit": "Now",
                 "error": str(e)
             }
