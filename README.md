@@ -99,7 +99,7 @@ npm run dev
 | **ML** | Scikit-learn (crowd prediction model) |
 | **Messaging** | Twilio (WhatsApp Business API) |
 | **Auth** | JWT (PyJWT) + bcrypt |
-| **Deployment** | Vercel (Frontend + Serverless Backend) |
+| **Deployment** | Google Cloud Run (Containerized Frontend + Backend) |
 
 ---
 
@@ -117,7 +117,6 @@ QueueHackathon/
 │   ├── TESTING.md              # Testing guide
 │   └── WHATSAPP_TESTING_RUNBOOK.md
 ├── README.md                   # ← You are here
-└── vercel.json
 ```
 
 ---
