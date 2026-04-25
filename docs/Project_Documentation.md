@@ -81,7 +81,7 @@ Unlike legacy systems (Q-Matic), QueueOS requires **zero physical hardware** (no
 | **ML**               | Scikit-learn                    | Crowd prediction model for branch load estimation.                     |
 | **Messaging**        | Twilio WhatsApp API             | Programmatic WhatsApp messages for booking confirmations and alerts.    |
 | **Auth**             | JWT (PyJWT) + bcrypt            | Stateless, secure authentication for staff and citizens.               |
-| **Deployment**       | Vercel                          | Zero-config serverless hosting for both frontend and backend.          |
+| **Deployment**       | Google Cloud Run                | Scalable containerized serverless hosting for both frontend and backend. |
 
 ---
 

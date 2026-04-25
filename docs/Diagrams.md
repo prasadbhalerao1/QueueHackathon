@@ -114,7 +114,7 @@ graph TD
 
 ```mermaid
 graph LR
-    CDN["Vercel CDN"] --> LB["Edge Network"]
+    CDN["Google Cloud CDN"] --> LB["Cloud Run Load Balancer"]
     LB --> App1["FastAPI 1"]
     LB --> App2["FastAPI 2"]
     App1 & App2 --> Mongo[("MongoDB Atlas")]
