@@ -24,29 +24,21 @@ settings = Settings()
 def get_allowed_origins():
     """
     Returns allowed origins for CORS based on environment.
-    For Vercel deployment, allows the frontend URL from env.
-    For development, allows localhost.
     """
     environment = os.getenv("ENVIRONMENT", "development")
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
     
     if environment == "production":
-        # For production, allow specific frontend URLs (comma-separated if multiple)
-        urls = [url.strip().rstrip("/") for url in frontend_url.replace(";", ",").split(",")]
-        # Always allow demo frontends
+        # Start with URLs from environment
+        urls = [url.strip().rstrip("/") for url in frontend_url.replace(";", ",").split(",") if url.strip()]
+        # Add broad demo whitelists (Very Permissive for Hackathon)
         urls.extend([
             "https://queueos-frontend-552912088240.us-central1.run.app",
-            "https://queue-system-demo.vercel.app"
+            "https://queue-system-demo.vercel.app",
+            "https://queue-hackathon-eight.vercel.app",
+            "https://*.vercel.app"
         ])
         return list(set(urls))
     else:
-        # For development, allow localhost variations and the frontend URL
-        return [
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:5173",
-            frontend_url.rstrip("/"),
-            # Allow Vercel preview deployments
-            "https://*.vercel.app",
-        ]
+        # For development, allow everything
+        return ["*"]
