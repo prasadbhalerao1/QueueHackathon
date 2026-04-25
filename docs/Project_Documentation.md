@@ -96,6 +96,7 @@ Unlike legacy systems (Q-Matic), QueueOS requires **zero physical hardware** (no
 | `GET`   | `/api/queue/{branch_id}`                 | Live queue data for a branch                  |
 | `GET`   | `/api/queue/track/{token}`               | Public token status lookup                    |
 | `GET`   | `/api/queue/my-tokens`                   | Citizen's own tokens (JWT auth)               |
+| `GET`   | `/api/queue/lookup-by-phone`             | Public token lookup via phone number          |
 | `PATCH` | `/api/queue/advance/{id}`                | Status transition (Call/Start/Complete/No-Show)|
 | `POST`  | `/api/queue/walk-in`                     | Manual walk-in registration                   |
 | `POST`  | `/api/queue/web-booking`                 | Web portal booking                            |
@@ -106,6 +107,7 @@ Unlike legacy systems (Q-Matic), QueueOS requires **zero physical hardware** (no
 | `POST`  | `/api/queue/transfer/{id}`               | Transfer token to another branch              |
 | `POST`  | `/api/queue/rush/{id}`                   | Toggle Rush Protocol                          |
 | `POST`  | `/api/queue/undo/{id}`                   | Revert last status change                     |
+| `POST`  | `/api/queue/pause-desk/{branch_id}/{desk}`| Return desk tokens to pool (break mode)       |
 | `PATCH` | `/api/queue/admin/branch/{id}/capacity`  | Set branch capacity                           |
 | `GET`   | `/api/queue/analytics/{branch_id}`       | Branch analytics                              |
 | `POST`  | `/api/queue/admin/vip/{branch_id}`       | Issue VIP token                               |
