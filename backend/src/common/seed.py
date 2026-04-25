@@ -104,21 +104,21 @@ async def seed_demo_data():
     # 5. SEED SERVICES (8 Realistic Indian Govt Services)
     # ──────────────────────────────────────────────────────────────────────
     services = [
-        Service(name="Aadhaar Card Update", base_duration_minutes=15, priority_level=3,
+        Service(name="Aadhaar Card Update (आधार कार्ड अपडेट)", base_duration_minutes=15, priority_level=3,
                 required_docs=["Original Aadhaar", "Proof of Address", "Proof of Identity"]),
-        Service(name="Income Certificate (Utpannacha Dakhla)", base_duration_minutes=20, priority_level=2,
+        Service(name="Income Certificate (उत्पन्नाचा दाखला)", base_duration_minutes=20, priority_level=2,
                 required_docs=["Ration Card", "Aadhaar Card", "Salary Slip/Talathi Report", "Self-Declaration"]),
-        Service(name="Caste Certificate (Jat Pramanpatra)", base_duration_minutes=30, priority_level=2,
+        Service(name="Caste Certificate (जातीचा दाखला)", base_duration_minutes=30, priority_level=2,
                 required_docs=["Aadhaar Card", "School Leaving Certificate", "Caste Proof Extract"]),
-        Service(name="Domicile Certificate", base_duration_minutes=25, priority_level=3,
+        Service(name="Domicile Certificate (डोमिसाइल प्रमाणपत्र)", base_duration_minutes=25, priority_level=3,
                 required_docs=["Aadhaar Card", "Birth Certificate", "Electricity Bill (10 yrs)"]),
-        Service(name="Ration Card Name Addition", base_duration_minutes=20, priority_level=3,
+        Service(name="Ration Card Name Addition (रेशन कार्ड नाव नोंदणी)", base_duration_minutes=20, priority_level=3,
                 required_docs=["Original Ration Card", "Aadhaar Cards", "Marriage/Birth Certificate"]),
-        Service(name="Property Tax Name Transfer", base_duration_minutes=35, priority_level=1,
+        Service(name="Property Tax Name Transfer (मालमत्ता कर नाव हस्तांतरण)", base_duration_minutes=35, priority_level=1,
                 required_docs=["Registered Sale Deed", "NOC from Society", "Previous Tax Receipts"]),
-        Service(name="Birth Certificate", base_duration_minutes=15, priority_level=3,
+        Service(name="Birth Certificate (जन्म प्रमाणपत्र)", base_duration_minutes=15, priority_level=3,
                 required_docs=["Hospital Discharge Summary", "Aadhaar of Parents", "Marriage Certificate"]),
-        Service(name="Marriage Certificate", base_duration_minutes=25, priority_level=2,
+        Service(name="Marriage Certificate (विवाह प्रमाणपत्र)", base_duration_minutes=25, priority_level=2,
                 required_docs=["Aadhaar Cards (Both)", "Wedding Invitation/Photos", "Age Proof", "Address Proof"]),
     ]
     for s in services:
