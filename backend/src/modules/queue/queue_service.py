@@ -77,7 +77,7 @@ class QueueService:
     async def get_default_branch() -> Branch:
         branches = await Branch.find_all().to_list()
         if not branches:
-            branch = Branch(name="Main Branch CFC", active_desks=5)
+            branch = Branch(name="PCMC Main Hub (Pimpri)", active_desks=5)
             await branch.save()
             return branch
         return branches[0]

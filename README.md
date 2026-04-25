@@ -11,8 +11,10 @@ A full-stack, multilingual (English / मराठी) queue management platform
 | Role | Phone | Password | Access |
 |------|-------|----------|--------|
 | **Super Admin** | `9999999999` | `password` | Analytics, capacity, rush protocol, VIP override |
-| **Staff Officer** | `8888888888` | `password` | Call next, advance tokens, walk-ins, transfers |
-| **Test Citizen** | `7777777777` | `password` | Dashboard, bookings, live tracking |
+| **Staff Officer (Kadam)** | `8888888888` | `password` | Call next, advance tokens, walk-ins, transfers |
+| **Staff Officer (Joshi)** | `8888888877` | `password` | Call next, advance tokens, walk-ins, transfers |
+| **Staff Officer (Pawar)** | `8888888866` | `password` | Call next, advance tokens, walk-ins, transfers |
+| **Test Citizen (Demo)** | `7777777777` | `password` | Live Dashboard (3 past activities, 1 active token) |
 
 ---
 
