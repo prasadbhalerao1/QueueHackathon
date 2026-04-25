@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     
     # Configuration with sensible defaults
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     FRONTEND_URL: str = "http://localhost:5173"
     ENVIRONMENT: str = "development"
 
