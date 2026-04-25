@@ -35,12 +35,14 @@ from src.modules.whatsapp.whatsapp_routes import whatsapp_router
 from src.modules.auth.auth_routes import auth_router
 from src.modules.users.users_routes import users_router
 from src.modules.ai.ai_routes import ai_router
+from src.modules.ml.ml_routes import ml_router
 
 app.include_router(queue_router, prefix="/api/queue", tags=["Queue"])
 app.include_router(whatsapp_router, prefix="/api/whatsapp", tags=["WhatsApp"])
 app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 app.include_router(users_router, prefix="/api/users", tags=["Users"])
 app.include_router(ai_router, prefix="/api", tags=["AI"])
+app.include_router(ml_router, prefix="/api/ml", tags=["ML"])
 
 @app.get("/")
 async def root():
