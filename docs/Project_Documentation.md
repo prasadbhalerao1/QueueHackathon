@@ -22,6 +22,13 @@ QueueOS is a digital-first, multilingual queue management system designed for In
 6. **Staff Dashboard**: Officers call tokens with one click, reducing counter-side chaos.
 7. **Document Assistance**: AI Chat Widget guides citizens on required documents in their language.
 
+### 4. Dynamic ML Prediction Engine
+QueueOS doesn't just guess crowd levels. It uses a **Scikit-learn Linear Regression** model that factors in:
+* **Live Database Counts**: Real-time waiting/active tokens for the specific branch.
+* **Temporal Patterns**: Hour-of-day weights (e.g., lunch hour vs. morning rush).
+* **Predictive Scaling**: Estimates additional traffic load for the next 60 minutes.
+* **Best Time Recommendation**: Automatically finds the "lowest stress" hour for a citizen to visit based on predicted dips in traffic.
+
 ### Differentiation
 
 Unlike legacy systems (Q-Matic), QueueOS requires **zero physical hardware** (no kiosks, no printers). It works on the devices citizens already own (WhatsApp) and uses affordable AI (Gemini 2.5 Flash) for natural language handling. Full Devanagari localization makes it accessible to the ~100M Marathi-speaking population.
@@ -78,7 +85,7 @@ Unlike legacy systems (Q-Matic), QueueOS requires **zero physical hardware** (no
 | **Backend**          | FastAPI (Python 3.10+)          | High-performance async capabilities for real-time queue transitions.   |
 | **Database**         | MongoDB Atlas (Beanie ODM)      | Flexible schema for varying citizen data and high-speed writes.        |
 | **AI / NLP**         | Gemini 2.5 Flash                | Cost-effective intent extraction, document chat, and OCR hints.        |
-| **ML**               | Scikit-learn                    | Crowd prediction model for branch load estimation.                     |
+| **ML**               | Scikit-learn (Linear Regression)| Dynamic crowd prediction using real-time branch data + historical trends. |
 | **Messaging**        | Twilio WhatsApp API             | Programmatic WhatsApp messages for booking confirmations and alerts.    |
 | **Auth**             | JWT (PyJWT) + bcrypt            | Stateless, secure authentication for staff and citizens.               |
 | **Deployment**       | Google Cloud Run                | Scalable containerized serverless hosting for both frontend and backend. |

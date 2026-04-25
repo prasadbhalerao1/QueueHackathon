@@ -96,7 +96,7 @@ npm run dev
 | **Backend** | FastAPI (Python), Beanie ODM, Pydantic v2 |
 | **Database** | MongoDB Atlas |
 | **AI / NLP** | Google Gemini 2.5 Flash (WhatsApp intent + document chat) |
-| **ML** | Scikit-learn (crowd prediction model) |
+| **ML** | Scikit-learn (Dynamic crowd load prediction) |
 | **Messaging** | Twilio (WhatsApp Business API) |
 | **Auth** | JWT (PyJWT) + bcrypt |
 | **Deployment** | Google Cloud Run (Containerized Frontend + Backend) |

@@ -89,5 +89,5 @@ QueueOS is a standalone SaaS platform designed for a micro-pilot under the India
 *   **Frontend**: React 19, Vite, TypeScript, Material UI v6.
 *   **Backend**: Python 3.10+, FastAPI.
 *   **Database**: MongoDB Atlas (Beanie ODM).
-*   **AI/ML**: Google Gemini 2.5 Flash, Scikit-learn.
+*   **AI/ML**: Google Gemini 2.5 Flash, Scikit-learn (Real-time Dynamic Crowd Prediction).
 *   **Infrastructure**: Google Cloud Run (Containerized), Twilio WhatsApp API.
