@@ -59,6 +59,12 @@ sequenceDiagram
     participant B as Backend
     participant T as Tracker
     participant S as Staff
+    participant G as Gemini 2.5 Flash
+    C->>T: "What docs for Aadhaar?"
+    T->>B: POST /api/chat/ask
+    B->>G: Process with AI
+    G-->>B: AI Response
+    B-->>T: Document Guidance
     C->>W: "Book Aadhaar Update"
     W->>B: Create Token
     B-->>W: Token + Link
@@ -102,9 +108,11 @@ graph TD
         UC17["VIP Override"]
         UC18["Reset"]
         UC19["Analytics"]
+        UC20["Phone Number Lookup"]
+        UC21["Pause Desk"]
     end
-    Citizen --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8
-    Staff --- UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC6
+    Citizen --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6 & UC7 & UC8 & UC20
+    Staff --- UC9 & UC10 & UC11 & UC12 & UC13 & UC14 & UC6 & UC21
     Admin --- UC15 & UC16 & UC17 & UC18 & UC19 & UC6
 ```
 

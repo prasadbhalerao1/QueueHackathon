@@ -28,6 +28,7 @@ QueueOS is a standalone SaaS platform designed for a micro-pilot under the India
 *   **Conversational Booking**: Message "Hi" on WhatsApp to book slots via Gemini AI intent parsing.
 *   **Web Portal Booking**: 4-step wizard for service selection and appointment scheduling.
 *   **Live Tracking**: PWA dashboard showing "People Ahead" and estimated wait time (ETA).
+*   **Phone Number Lookup**: Citizens can find their active tokens by simply entering their phone number.
 *   **Smart Delay**: "Running Late" feature to hold a spot without losing the token.
 *   **AI Document Assistant**: Gemini-powered chat widget to provide document requirements in English and Marathi.
 *   **Multilingual Support**: Instant toggle between English and Marathi (Devanagari) globally.
@@ -38,6 +39,7 @@ QueueOS is a standalone SaaS platform designed for a micro-pilot under the India
 *   **Grace Re-entry**: Capability to re-admit no-show citizens with a configurable penalty (e.g., 1-person delay).
 *   **Branch Transfer**: One-click transfer of tokens between branches.
 *   **Undo Mechanism**: 5-minute window to revert accidental status changes.
+*   **Desk Pause**: Ability to return all tokens currently assigned to a specific desk back to the waiting pool when taking a break.
 *   **Offline Resilience**: Ability to perform actions during internet drops, syncing to the server once restored.
 
 ### 3.3 Admin Module
@@ -75,7 +77,7 @@ QueueOS is a standalone SaaS platform designed for a micro-pilot under the India
 *   **GIGW 3.0 Compliance**: Designed for Indian government digital standards.
 
 ### 5.3 Reliability
-*   Serverless architecture on Vercel for high availability.
+*   Serverless container architecture on Google Cloud Run for high availability.
 *   MongoDB Atlas for persistent, globally distributed data.
 
 ### 5.4 Localization
@@ -88,4 +90,4 @@ QueueOS is a standalone SaaS platform designed for a micro-pilot under the India
 *   **Backend**: Python 3.10+, FastAPI.
 *   **Database**: MongoDB Atlas (Beanie ODM).
 *   **AI/ML**: Google Gemini 2.5 Flash, Scikit-learn.
-*   **Infrastructure**: Vercel (Serverless), Twilio WhatsApp API.
+*   **Infrastructure**: Google Cloud Run (Containerized), Twilio WhatsApp API.
