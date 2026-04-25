@@ -31,8 +31,9 @@ def get_allowed_origins():
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
     
     if environment == "production":
-        # For production, only allow the specific frontend URL
-        return [frontend_url.rstrip("/")]
+        # For production, allow specific frontend URLs (comma-separated if multiple)
+        urls = [url.strip().rstrip("/") for url in frontend_url.split(",")]
+        return urls
     else:
         # For development, allow localhost variations and the frontend URL
         return [
