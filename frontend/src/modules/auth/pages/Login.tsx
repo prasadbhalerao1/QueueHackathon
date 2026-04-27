@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, CircularProgress, Alert, Divider, InputAdornment, IconButton } from '@mui/material';
-import { LockOutlined, BadgeOutlined, Visibility, VisibilityOff } from '@mui/icons-material';
+import { 
+  Box, Card, CardContent, Typography, TextField, Button, 
+  CircularProgress, Alert, Divider, InputAdornment, IconButton,
+  Accordion, AccordionSummary, AccordionDetails
+} from '@mui/material';
+import { 
+  LockOutlined, BadgeOutlined, Visibility, VisibilityOff,
+  ExpandMore, KeyOutlined 
+} from '@mui/icons-material';
 import { useLoginMutation } from '../hooks/useAuth';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -172,11 +179,70 @@ export const Login: React.FC = (): React.ReactElement => {
               color="primary"
               size="small"
               fullWidth
-              sx={{ borderRadius: 2 }}
+              sx={{ borderRadius: 2, mb: 3 }}
             >
               {t('trackMyToken')}
             </Button>
           </Box>
+
+          {/* Demo Credentials Expandable */}
+          <Accordion 
+            elevation={0} 
+            sx={{ 
+              bgcolor: 'rgba(25, 118, 210, 0.04)', 
+              borderRadius: '8px !important',
+              '&:before': { display: 'none' }
+            }}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <KeyOutlined sx={{ fontSize: 20, color: 'primary.main' }} />
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  Demo Credentials
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails sx={{ pt: 0 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {[
+                  { role: 'Super Admin', phone: '9999999999' },
+                  { role: 'Staff Officer', phone: '8888888888' },
+                  { role: 'Test Citizen', phone: '7777777777' }
+                ].map((demo) => (
+                  <Box 
+                    key={demo.phone}
+                    onClick={() => {
+                      setPhone(demo.phone);
+                      setPassword('password');
+                    }}
+                    sx={{ 
+                      p: 1, 
+                      borderRadius: 1, 
+                      cursor: 'pointer',
+                      border: '1px solid rgba(0,0,0,0.05)',
+                      transition: 'all 0.2s',
+                      '&:hover': { 
+                        bgcolor: 'rgba(25, 118, 210, 0.08)',
+                        borderColor: 'primary.light'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                        {demo.role}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                        Click to fill
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" sx={{ fontSize: '0.75rem', color: 'text.secondary', fontFamily: 'monospace' }}>
+                      {demo.phone} / password
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
         </CardContent>
       </Card>
     </Box>
